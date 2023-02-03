@@ -1,2 +1,2 @@
-# go-bits-busses
+# BitsB
 Shuttle bus services backend written in go
