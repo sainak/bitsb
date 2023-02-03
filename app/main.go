@@ -24,8 +24,8 @@ func init() {
 		log.Print(err)
 	}
 
-	if viper.GetBool("APP_DEBUG") {
-		log.Println("APP running in debug mode")
+	if viper.GetBool("SERVER_DEBUG") {
+		log.Println("SERVER running in debug mode")
 	}
 }
 
@@ -58,10 +58,10 @@ func main() {
 		render.PlainText(w, r, "pong")
 	})
 
-	timeout := viper.GetInt("APP_TIMEOUT")
+	timeout := viper.GetInt("SERVER_TIMEOUT")
 
 	server := &http.Server{
-		Addr:              ":" + viper.GetString("APP_PORT"),
+		Addr:              ":" + viper.GetString("SERVER_PORT"),
 		Handler:           r,
 		ReadHeaderTimeout: time.Duration(timeout) * time.Second,
 	}
