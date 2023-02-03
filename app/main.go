@@ -61,7 +61,7 @@ func main() {
 	timeout := viper.GetInt("SERVER_TIMEOUT")
 
 	server := &http.Server{
-		Addr:              ":" + viper.GetString("SERVER_PORT"),
+		Addr:              ":" + viper.GetString("WEBSITE_PORT"),
 		Handler:           r,
 		ReadHeaderTimeout: time.Duration(timeout) * time.Second,
 	}
