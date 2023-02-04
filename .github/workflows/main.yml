@@ -63,11 +63,11 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,format=long
             type=raw,value=production-latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=staging-latest,enable=${{ github.ref == 'refs/heads/dev' }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=long
           flavor: |
             latest=false
 
@@ -130,11 +130,11 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,format=long
             type=raw,value=production-latest,enable=${{ github.ref == 'refs/heads/main' }}
             type=raw,value=staging-latest,enable=${{ github.ref == 'refs/heads/dev' }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=long
           flavor: |
             latest=true
 
