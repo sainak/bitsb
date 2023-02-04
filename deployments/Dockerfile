@@ -22,9 +22,9 @@ RUN apk update && apk upgrade && \
 
 WORKDIR /app 
 
-COPY --from=builder /app/engine /app/
+COPY --from=builder /app/build/ /app/
 
-HEALTHCHECK --interval=1m30s --timeout=10s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=1m --timeout=10s --start-period=3m --retries=3 \
     CMD curl -f http://localhost:${WEBSITE_PORT}/ping || exit 1
 
 CMD /app/engine

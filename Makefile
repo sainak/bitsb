@@ -1,11 +1,7 @@
-# Database
+.DEFAULT_GOAL := help
+.PHONY: build bin make
 
-DB_DRIVER ?= postgres
-DB_USER ?= postgres
-DB_PASSWORD ?= postgres
-DB_ADDRESS ?= 127.0.0.1:3306
-DB_NAME ?= bitsb
-
+# --- Tooling & Variables ----------------------------------------------------------------
 # Exporting bin folder to the path for makefile
 export PATH   := $(PWD)/bin:$(PATH)
 # Default Shell
@@ -13,132 +9,147 @@ export SHELL  := bash
 # Type of OS: Linux or Darwin.
 export OSTYPE := $(shell uname -s)
 
+# export .env
+ifneq (,$(wildcard ./.env))
+	include .env
+	export
+endif
 
-# --- Tooling & Variables ----------------------------------------------------------------
-include ./misc/make/tools.Makefile
-include ./misc/make/help.Makefile
+include ./make/tools.Makefile
+include ./make/help.Makefile
+
+COMPOSE := docker-compose -f ./compose.yaml
+
 
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-up: dev-env dev-air             ## Startup / Spinup Docker Compose and air
-down: docker-stop               ## Stop Docker
-destroy: docker-teardown clean  ## Teardown (removes volumes, tmp files, etc...)
 
 install-deps: migrate air gotestsum tparse mockery ## Install Development Dependencies (localy).
 deps: $(MIGRATE) $(AIR) $(GOTESTSUM) $(TPARSE) $(MOCKERY) ## Checks for Global Development Dependencies.
 deps:
 	@echo "Required Tools Are Available"
 
-dev-env: ## Bootstrap Environment (with a Docker-Compose help).
-	@ docker-compose up -d --build db
+dev: dev-env dev-air ## Startup / Spinup Docker Compose and air for development.
 
-dev-env-test: dev-env ## Run application (within a Docker-Compose help)
-	@ $(MAKE) image-build
-	docker-compose up api
+up: ## Run application (within a Docker-Compose)
+	@if [ ! -f .env ]; then \
+		echo "Creating new .env file"; \
+		cp .env.example .env; \
+	fi
+	@ $(COMPOSE) up --wait -d
+
+logs: ## Show logs (within a Docker-Compose)
+	@ $(COMPOSE) logs -f --no-log-prefix api; true
+
+dev-env: ## Bootstrap Environment (with a Docker-Compose).
+	@ $(COMPOSE) up -d --build db
+
+dev-env-test: dev-env ## Run application (within a Docker-Compose)
+	#@ $(MAKE) image-build
+	@ $(COMPOSE) up --build api
 
 dev-air: $(AIR) ## Starts AIR ( Continuous Development app).
-	air
+	@ air
 
-docker-stop:
-	@ docker-compose down
+db-shell: ## Run database shell (In local environment)
+	@ psql "${DB_DSN}"
 
-docker-teardown:
-	@ docker-compose down --remove-orphans -v
+docker-db-shell: ## Run database shell (within a Docker-Compose)
+	@ $(COMPOSE) exec db psql -U postgres
+
+down: ## Stop docker services
+	@ $(COMPOSE) down
+
+teardown: ## Teardown (removes volumes, tmp files, etc...)
+	@ $(COMPOSE) down --remove-orphans -v
+
+
+# ~~~ Docker Build ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.ONESHELL:
+image-build: ## Build Docker Image
+	@ echo "Docker Build"
+	@ DOCKER_BUILDKIT=0 docker build \
+		--file deployments/Dockerfile \
+		--tag bitsb \
+			.
+
 
 # ~~~ Code Actions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-lint: $(GOLANGCI) ## Runs golangci-lint with predefined configuration
-	@echo "Applying linter"
-	golangci-lint version
-	golangci-lint run -c .golangci.yaml ./...
-
-# -trimpath - will remove the filepathes from the reports, good to same money on network trafic,
-#             focus on bug reports, and find issues fast.
-# - race    - adds a racedetector, in case of racecondition, you can catch report with sentry.
-#             https://golang.org/doc/articles/race_detector.html
-#
-# todo(butuzov): add additional flags to compiler to have an `version` flag.
-build: ## Builds binary
-	@ printf "Building aplication... "
-	@ go build \
-		-trimpath  \
-		-o engine \
-		./app/
-	@ echo "done"
-
-
-build-race: ## Builds binary (with -race flag)
-	@ printf "Building aplication with race flag... "
-	@ go build \
-		-trimpath  \
-		-race      \
-		-o engine \
-		./app/
-	@ echo "done"
-
-
-go-generate: $(MOCKERY) ## Runs go generte ./...
-	go generate ./...
-
 
 TESTS_ARGS := --format testname --jsonfile gotestsum.json.out
 TESTS_ARGS += --max-fails 2
 TESTS_ARGS += -- ./...
-TESTS_ARGS += -test.parallel 2
-TESTS_ARGS += -test.count    1
 TESTS_ARGS += -test.failfast
-TESTS_ARGS += -test.coverprofile   coverage.out
-TESTS_ARGS += -test.timeout        5s
+TESTS_ARGS += -test.parallel $(shell nproc)
+TESTS_ARGS += -test.count 1
+TESTS_ARGS += -test.timeout 5s
+TESTS_ARGS += -test.coverprofile coverage.out
 TESTS_ARGS += -race
 
 run-tests: $(GOTESTSUM)
 	@ gotestsum $(TESTS_ARGS) -short
 
 tests: run-tests $(TPARSE) ## Run Tests & parse details
-	@cat gotestsum.json.out | $(TPARSE) -all -notests
+	@cat gotestsum.json.out | tparse -all -notests
 
-# ~~~ Docker Build ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+lint: $(GOLANGCI) ## Runs golangci-lint with predefined configuration
+	@echo "Applying linter"
+	golangci-lint version
+	golangci-lint run -c .golangci.yaml ./...
 
-.ONESHELL:
-image-build:
-	@ echo "Docker Build"
-	@ DOCKER_BUILDKIT=0 docker build \
-		--file Dockerfile \
-		--tag bitsb \
-			.
+build: ## Builds binary
+	@ printf "Building aplication... "
+	@ go build \
+		-trimpath  \
+		-o ./build/engine \
+		./app/
+	@ echo "done"
+
+build-race: ## Builds binary (with -race flag)
+	@ printf "Building aplication with race flag... "
+	@ go build \
+		-trimpath  \
+		-race      \
+		-o ./build/engine \
+		./app/
+	@ echo "done"
+
+go-generate: $(MOCKERY) ## Runs go generte ./...
+	@ printf "Generating mocks..."
+	@ go generate ./...
+
 
 # ~~~ Database Migrations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
-
-DB_DSN ?= "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_ADDRESS)/$(DB_NAME)"
 
 migrate-up: $(MIGRATE) ## Apply all (or N up) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
-	migrate  -database $(DB_DSN) -path=misc/migrations up ${NN}
+	migrate  -database "${DB_DSN}" -path=misc/migrations up ${NN}
 
 .PHONY: migrate-down
 migrate-down: $(MIGRATE) ## Apply all (or N down) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
-	migrate  -database $(DB_DSN) -path=misc/migrations down ${NN}
+	migrate  -database "${DB_DSN}" -path=migrations down ${NN}
 
 .PHONY: migrate-drop
 migrate-drop: $(MIGRATE) ## Drop everything inside the database.
-	migrate  -database $(DB_DSN) -path=misc/migrations drop
+	migrate  -database "${DB_DSN}" -path=migrations drop
 
 .PHONY: migrate-create
 migrate-create: $(MIGRATE) ## Create a set of up/down migrations with a specified name.
 	@ read -p "Please provide name for the migration: " Name; \
 	migrate create -ext sql -dir misc/migrations $${Name}
 
-# ~~~ Cleans ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-clean: clean-artifacts clean-docker
+# ~~~ Cleanup ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+clean: clean-artifacts clean-docker ## Cleanup (removes volumes, tmp files, etc...)
 
 clean-artifacts: ## Removes Artifacts (*.out)
 	@printf "Cleanning artifacts... "
 	@rm -f *.out
+	@rm -r build
 	@echo "done."
 
-
-clean-docker: ## Removes dangling docker images
+clean-docker: ## Tear down docker containers and images
+	@ $(MAKE) docker-teardown
 	@ docker image prune -f

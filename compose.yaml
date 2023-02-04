@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 volumes:
   postgres_data: {}
@@ -8,15 +8,18 @@ services:
     image: bitsb
     container_name: bitsb_api
     build:
-      dockerfile: ./Dockerfile
-      context: .
+      dockerfile: ./deployments/Dockerfile
+      context: ./
     ports:
       - "9090:9090"
     depends_on:
       db:
         condition: service_healthy
     env_file:
-      - .env
+      - ./.env
+    environment:
+      - DB_DSN=postgres://postgres:postgres@db:5432/bitsb?sslmode=disable
+      - WEBSITE_PORT=9090
 
   db:
     image: postgres:14
@@ -28,9 +31,13 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: bitsb
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
+      test: pg_isready -U postgres
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-      - postgres_data:/var/lib/postgresql/data:Z
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+        volume:
+          nocopy: true

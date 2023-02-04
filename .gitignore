@@ -6,5 +6,6 @@ _*
 .DS_Store
 engine
 bin/
+build/
 *.out
 tmp_app/

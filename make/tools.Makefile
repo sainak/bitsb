@@ -20,7 +20,7 @@ bin/migrate: GITHUB  := golang-migrate/migrate
 bin/migrate: ARCHIVE := migrate.$(OSTYPE)-amd64.tar.gz
 bin/migrate: bin
 	@ printf "Install migrate... "
-	@ curl -Ls $(call github_url) | tar -zOxf - ./migrate.$(shell echo $(OSTYPE) | tr A-Z a-z)-amd64 > $@ && chmod +x $@
+	@ curl -Ls $(call github_url) | tar -zOxf - migrate > $@ && chmod +x $@
 	@ echo "done."
 
 # ~~ [ air ] ~~~ https://github.com/cosmtrek/air ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
