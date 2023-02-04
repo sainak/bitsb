@@ -2,13 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
 	_rootRouter "github.com/sainak/bitsb/root/delivery/http/router"
@@ -22,11 +22,18 @@ func init() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Print(err)
+		logrus.Print(err)
+	}
+
+	if viper.GetBool("DEPLOYMENT") {
+		logrus.SetFormatter(&logrus.JSONFormatter{
+			TimestampFormat: time.RFC3339,
+		})
+		logrus.SetReportCaller(true)
 	}
 
 	if viper.GetBool("SERVER_DEBUG") {
-		log.Println("SERVER running in debug mode")
+		logrus.Println("SERVER running in debug mode")
 	}
 }
 
@@ -34,17 +41,17 @@ func main() {
 	dsn := viper.GetString("DB_DSN")
 	dbConn, err := sql.Open(`postgres`, dsn)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	err = dbConn.Ping()
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	defer func() {
 		err := dbConn.Close()
 		if err != nil {
-			log.Fatal(err)
+			logrus.Fatal(err)
 		}
 	}()
 
@@ -70,6 +77,6 @@ func main() {
 	}
 	err = server.ListenAndServe()
 	if err != nil {
-		log.Println(err)
+		logrus.Println(err)
 	}
 }
