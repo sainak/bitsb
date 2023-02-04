@@ -54,6 +54,10 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		render.PlainText(w, r, "home")
+	})
+
 	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 		render.PlainText(w, r, "pong")
 	})
