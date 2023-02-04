@@ -8,9 +8,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+
+	_rootRouter "github.com/sainak/bitsb/root/delivery/http/router"
 )
 
 func init() {
@@ -54,13 +55,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		render.PlainText(w, r, "home")
-	})
+	_rootRouter.RegisterRoutes(r)
 
-	r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		render.PlainText(w, r, "pong")
-	})
+	if viper.GetBool("SERVER_DEBUG") {
+		r.Mount("/debug", middleware.Profiler())
+	}
 
 	timeout := viper.GetInt("SERVER_TIMEOUT")
 
