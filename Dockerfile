@@ -18,11 +18,13 @@ RUN make build
 FROM alpine:latest
 
 RUN apk update && apk upgrade && \
-    apk --update --no-cache add tzdata && \
-    mkdir /app 
+    apk --update --no-cache add tzdata curl
 
 WORKDIR /app 
 
 COPY --from=builder /app/engine /app/
+
+HEALTHCHECK --interval=1m30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:${WEBSITE_PORT}/ping || exit 1
 
 CMD /app/engine
