@@ -44,6 +44,11 @@ jobs:
       - name: Run tests
         run: make tests
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   build-staging:
     needs: [lint, test]
     name: Build & Push Staging to container registries
