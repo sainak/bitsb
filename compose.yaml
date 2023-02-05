@@ -10,6 +10,8 @@ services:
     build:
       dockerfile: ./deployments/Dockerfile
       context: ./
+      args:
+        - VERSION
     ports:
       - "9090:9090"
     depends_on:

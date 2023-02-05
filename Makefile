@@ -67,11 +67,11 @@ teardown: ## Teardown (removes volumes, tmp files, etc...)
 
 # ~~~ Docker Build ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.ONESHELL:
 image-build: ## Build Docker Image
 	@ echo "Docker Build"
 	@ DOCKER_BUILDKIT=0 docker build \
 		--file deployments/Dockerfile \
+		--build-arg VERSION=${VERSION} \
 		--tag bitsb \
 			.
 

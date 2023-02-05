@@ -1,5 +1,3 @@
-ENV VERSION="nil-docker"
-
 # Builder
 FROM golang:1.20-alpine as builder
 
@@ -14,7 +12,9 @@ RUN go mod download
 
 COPY . .
 
-RUN VERSION=${VERSION} make build
+ARG VERSION="nil"
+
+RUN VERSION="${VERSION}" make build
 
 # Distribution
 FROM alpine:latest as app
