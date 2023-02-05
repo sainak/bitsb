@@ -20,6 +20,8 @@ include ./make/help.Makefile
 
 COMPOSE := docker-compose -f ./compose.yaml
 
+VERSION ?= $(shell git describe --tags --always --dirty)
+
 
 # ~~~ Development Environment ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -101,6 +103,7 @@ build: ## Builds binary
 	@ printf "Building aplication... "
 	@ go build \
 		-trimpath  \
+		-ldflags "-X 'main.version=${VERSION}'"\
 		-o ./build/engine \
 		./app/
 	@ echo "done"
@@ -110,6 +113,7 @@ build-race: ## Builds binary (with -race flag)
 	@ go build \
 		-trimpath  \
 		-race      \
+		-ldflags "-X 'main.version=${VERSION}-race'"\
 		-o ./build/engine \
 		./app/
 	@ echo "done"

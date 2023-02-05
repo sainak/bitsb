@@ -3,6 +3,7 @@ module github.com/sainak/bitsb
 go 1.20
 
 require (
+	github.com/getsentry/sentry-go v0.17.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/render v1.0.2
 	github.com/lib/pq v1.10.7

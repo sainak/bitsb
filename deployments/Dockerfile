@@ -1,3 +1,5 @@
+ENV VERSION="nil-docker"
+
 # Builder
 FROM golang:1.20-alpine as builder
 
@@ -12,7 +14,7 @@ RUN go mod download
 
 COPY . .
 
-RUN make build
+RUN VERSION=${VERSION} make build
 
 # Distribution
 FROM alpine:latest as app
@@ -20,7 +22,7 @@ FROM alpine:latest as app
 RUN apk update && apk upgrade && \
     apk --update --no-cache add tzdata curl
 
-WORKDIR /app 
+WORKDIR /app
 
 COPY --from=builder /app/build/ /app/
 
