@@ -109,6 +109,20 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
+      - name: Prune old images
+        uses: vlaurin/action-ghcr-prune@v0.5.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          organization: ${{ github.repository_owner }}
+          container: ${{ env.IMAGE_NAME }}
+          keep-younger-than: 7 # days
+          keep-last: 5
+          prune-untagged: true
+          keep-tags-regexes: |
+            latest
+            staging-latest
+            \d+\.\d+
+
   deploy-production:
     environment:
       name: Production
