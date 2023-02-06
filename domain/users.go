@@ -15,15 +15,15 @@ const (
 )
 
 type User struct {
-	ID        int64       `json:"id"`
-	FirstName string      `json:"first_name"`
-	LastName  string      `json:"last_name"`
-	Email     string      `json:"email"`
-	Password  string      `json:"password"`
-	Access    AccessLevel `json:"-"`
-	LastLogin null.Time   `json:"last_login"`
-	CreatedAt time.Time   `json:"created_at"`
-	UpdatedAt time.Time   `json:"updated_at"`
+	ID        int64       `json:"id" db:"id"`
+	FirstName string      `json:"first_name"  db:"first_name"`
+	LastName  string      `json:"last_name" db:"last_name"`
+	Email     string      `json:"email" db:"email"`
+	Password  string      `json:"-" db:"password"`
+	Access    AccessLevel `json:"-" db:"access_level"`
+	LastLogin null.Time   `json:"last_login" db:"last_login"`
+	CreatedAt time.Time   `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time   `json:"updated_at" db:"updated_at"`
 }
 
 type UserLogin struct {
@@ -39,7 +39,8 @@ type UserRegister struct {
 }
 
 type UserStorer interface {
-	SelectUser(ctx context.Context, id int64) (User, error)
-	InsertUser(ctx context.Context, user *User) error
-	UpdateUser(ctx context.Context, user *User) error
+	SelectUserByID(ctx context.Context, id int64) (user User, err error)
+	SelectUserByEmail(ctx context.Context, email string) (user User, err error)
+	InsertUser(ctx context.Context, user *User) (err error)
+	UpdateUser(ctx context.Context, user *User) (err error)
 }
