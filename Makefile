@@ -127,7 +127,7 @@ mocks: $(MOCKERY) ## Runs go generte ./...
 
 migrate-up: $(MIGRATE) ## Apply all (or N up) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
-	migrate  -database "${DB_DSN}" -path=misc/migrations up ${NN}
+	migrate  -database "${DB_DSN}" -path=migrations up ${NN}
 
 migrate-down: $(MIGRATE) ## Apply all (or N down) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
