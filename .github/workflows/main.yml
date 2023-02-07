@@ -6,7 +6,7 @@ on:
     branches:
       - main
       - dev
-    pull_request:
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
