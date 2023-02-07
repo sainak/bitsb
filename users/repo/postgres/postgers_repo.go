@@ -9,18 +9,26 @@ import (
 )
 
 var (
-	selectUserByIDQuery    = `SELECT id, email, first_name, last_name, access_level, password, last_login, created_at, updated_at FROM users WHERE id=$1`
-	selectUserByEmailQuery = `SELECT id, email, first_name, last_name, access_level, password, last_login, created_at, updated_at FROM users WHERE email=$1`
-	insertUserQuery        = `INSERT INTO users (email, first_name, last_name, access_level, password, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
-	updateUserQuery        = `UPDATE users SET email=$2, first_name=$3, last_name=$4, password=$5, updated_at=$6 WHERE id=$1`
+	selectUserByIDQuery = `SELECT id, email, first_name, last_name, access_level, password, last_login, created_at, updated_at 
+								FROM users 
+								WHERE id=$1`
+	selectUserByEmailQuery = `SELECT id, email, first_name, last_name, access_level, password, last_login, created_at, updated_at 
+								FROM users 
+								WHERE email=$1`
+	insertUserQuery = `INSERT INTO users (email, first_name, last_name, access_level, password, created_at, updated_at) 
+								VALUES ($1, $2, $3, $4, $5, $6, $7) 
+								RETURNING id`
+	updateUserQuery = `UPDATE users 
+								SET email=$2, first_name=$3, last_name=$4, password=$5, updated_at=$6 
+								WHERE id=$1`
 )
 
 type UserRepository struct {
 	Conn *sql.DB
 }
 
-func New(Conn *sql.DB) domain.UserStorer {
-	return &UserRepository{Conn}
+func New(conn *sql.DB) domain.UserStorer {
+	return &UserRepository{conn}
 }
 
 func (u UserRepository) fetchUser(ctx context.Context, query string, args ...interface{}) (user domain.User, err error) {

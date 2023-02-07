@@ -22,22 +22,22 @@ type UserRepositoryTestSuite struct {
 	repo domain.UserStorer
 }
 
-func (suite *UserRepositoryTestSuite) SetupTest() {
+func (s *UserRepositoryTestSuite) SetupTest() {
 	db, mock, err := sqlmock.New()
 	if err != nil {
-		suite.T().Fatal(err)
+		s.T().Fatal(err)
 	}
-	suite.db = db
-	suite.mock = mock
-	suite.repo = New(db)
+	s.db = db
+	s.mock = mock
+	s.repo = New(db)
 }
 
 func TestUserRepositoryTestSuite(t *testing.T) {
 	suite.Run(t, new(UserRepositoryTestSuite))
 }
 
-func (suite *UserRepositoryTestSuite) TestSelectUser() {
-	t := suite.T()
+func (s *UserRepositoryTestSuite) TestSelectUser() {
+	t := s.T()
 
 	user := &domain.User{
 		ID:        1,
@@ -49,7 +49,7 @@ func (suite *UserRepositoryTestSuite) TestSelectUser() {
 	}
 
 	t.Run("when select by user id is successful", func(t *testing.T) {
-		suite.mock.ExpectQuery("SELECT (.+) FROM users").
+		s.mock.ExpectQuery("SELECT (.+) FROM users").
 			WithArgs(user.ID).
 			WillReturnRows(sqlmock.
 				NewRows([]string{
@@ -75,13 +75,13 @@ func (suite *UserRepositoryTestSuite) TestSelectUser() {
 					user.UpdatedAt,
 				),
 			)
-		res, err := suite.repo.SelectUserByID(context.Background(), user.ID)
+		res, err := s.repo.SelectUserByID(context.Background(), user.ID)
 		assert.Nil(t, err)
 		assert.Equal(t, user, &res)
 	})
 
 	t.Run("when select by user email is successful", func(t *testing.T) {
-		suite.mock.ExpectQuery("SELECT (.+) FROM users").
+		s.mock.ExpectQuery("SELECT (.+) FROM users").
 			WithArgs(user.Email).
 			WillReturnRows(sqlmock.
 				NewRows([]string{
@@ -107,22 +107,22 @@ func (suite *UserRepositoryTestSuite) TestSelectUser() {
 					user.UpdatedAt,
 				),
 			)
-		res, err := suite.repo.SelectUserByEmail(context.Background(), user.Email)
+		res, err := s.repo.SelectUserByEmail(context.Background(), user.Email)
 		assert.Nil(t, err)
 		assert.Equal(t, user, &res)
 	})
 
 	t.Run("when select by user id is not successful", func(t *testing.T) {
-		suite.mock.ExpectQuery("SELECT (.+) FROM users").
+		s.mock.ExpectQuery("SELECT (.+) FROM users").
 			WithArgs(user.ID).
 			WillReturnError(sql.ErrNoRows)
-		_, err := suite.repo.SelectUserByID(context.Background(), user.ID)
+		_, err := s.repo.SelectUserByID(context.Background(), user.ID)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
 
-func (suite *UserRepositoryTestSuite) TestInsertUser() {
-	t := suite.T()
+func (s *UserRepositoryTestSuite) TestInsertUser() {
+	t := s.T()
 
 	patch, err := mpatch.PatchMethod(time.Now, func() time.Time {
 		return time.Date(2020, 11, 01, 00, 00, 00, 0, time.UTC)
@@ -147,7 +147,7 @@ func (suite *UserRepositoryTestSuite) TestInsertUser() {
 	}
 
 	t.Run("when insert is successful", func(t *testing.T) {
-		suite.mock.ExpectQuery("INSERT INTO").
+		s.mock.ExpectQuery("INSERT INTO").
 			WithArgs(
 				user.Email,
 				user.FirstName,
@@ -160,14 +160,14 @@ func (suite *UserRepositoryTestSuite) TestInsertUser() {
 			WillReturnRows(
 				sqlmock.NewRows([]string{"id"}).AddRow(user.ID),
 			)
-		err = suite.repo.InsertUser(context.Background(), user)
+		err = s.repo.InsertUser(context.Background(), user)
 		assert.Nil(t, err)
 		assert.Equal(t, int64(1), user.ID)
 		assert.Equal(t, user.CreatedAt, time.Now())
 	})
 
 	t.Run("when insert is not successful", func(t *testing.T) {
-		suite.mock.ExpectQuery("INSERT INTO").
+		s.mock.ExpectQuery("INSERT INTO").
 			WithArgs(
 				user.Email,
 				user.FirstName,
@@ -178,13 +178,13 @@ func (suite *UserRepositoryTestSuite) TestInsertUser() {
 				time.Now(),
 			).
 			WillReturnError(sql.ErrNoRows)
-		err := suite.repo.InsertUser(context.Background(), user)
+		err := s.repo.InsertUser(context.Background(), user)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
 
-func (suite *UserRepositoryTestSuite) TestUpdateUser() {
-	t := suite.T()
+func (s *UserRepositoryTestSuite) TestUpdateUser() {
+	t := s.T()
 
 	patch, err := mpatch.PatchMethod(time.Now, func() time.Time {
 		return time.Date(2020, 11, 01, 00, 00, 00, 0, time.UTC)
@@ -212,7 +212,7 @@ func (suite *UserRepositoryTestSuite) TestUpdateUser() {
 	}
 
 	t.Run("when update is successful", func(t *testing.T) {
-		suite.mock.ExpectExec("UPDATE users SET (.+)").
+		s.mock.ExpectExec("UPDATE users SET (.+)").
 			WithArgs(
 				user.ID,
 				user.Email,
@@ -224,13 +224,13 @@ func (suite *UserRepositoryTestSuite) TestUpdateUser() {
 			WillReturnResult(
 				sqlmock.NewResult(1, 1),
 			)
-		err := suite.repo.UpdateUser(context.Background(), user)
+		err := s.repo.UpdateUser(context.Background(), user)
 		assert.Nil(t, err)
 		assert.Equal(t, user.UpdatedAt, time.Now())
 	})
 
 	t.Run("when update is performed on invalid user", func(t *testing.T) {
-		suite.mock.ExpectExec("UPDATE users SET (.+)").
+		s.mock.ExpectExec("UPDATE users SET (.+)").
 			WithArgs(
 				user.ID,
 				user.Email,
@@ -242,12 +242,12 @@ func (suite *UserRepositoryTestSuite) TestUpdateUser() {
 			WillReturnResult(
 				sqlmock.NewResult(0, 0),
 			)
-		err := suite.repo.UpdateUser(context.Background(), user)
+		err := s.repo.UpdateUser(context.Background(), user)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 
 	t.Run("when update is not successful", func(t *testing.T) {
-		suite.mock.ExpectExec("UPDATE users SET (.+)").
+		s.mock.ExpectExec("UPDATE users SET (.+)").
 			WithArgs(
 				user.ID,
 				user.Email,
@@ -257,7 +257,7 @@ func (suite *UserRepositoryTestSuite) TestUpdateUser() {
 				time.Now(),
 			).
 			WillReturnError(sql.ErrNoRows)
-		err := suite.repo.UpdateUser(context.Background(), user)
+		err := s.repo.UpdateUser(context.Background(), user)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }

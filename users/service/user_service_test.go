@@ -27,14 +27,14 @@ func TestUserServiceTestSuite(t *testing.T) {
 	suite.Run(t, new(UserServiceTestSuite))
 }
 
-func (suite *UserServiceTestSuite) SetupTest() {
-	suite.repo = mocks.NewUserStorer(suite.T())
-	suite.jwt = jwt.New("test_secret", "24", "5")
-	suite.service = New(suite.repo, suite.jwt, 0)
+func (s *UserServiceTestSuite) SetupTest() {
+	s.repo = mocks.NewUserStorer(s.T())
+	s.jwt = jwt.New("test_secret", "24", "5")
+	s.service = New(s.repo, s.jwt, 0)
 }
 
-func (suite *UserServiceTestSuite) TestLogin() {
-	t := suite.T()
+func (s *UserServiceTestSuite) TestLogin() {
+	t := s.T()
 
 	password := "test_pass"
 	p, err := hashPassword(password)
@@ -53,16 +53,16 @@ func (suite *UserServiceTestSuite) TestLogin() {
 		UpdatedAt: time.Time{},
 	}
 	t.Run("when login is successful", func(t *testing.T) {
-		suite.repo.
+		s.repo.
 			On("SelectUserByEmail", mock.Anything, user.Email).
 			Return(user, nil)
 		creds := &domain.UserLogin{
 			Email:    user.Email,
 			Password: password,
 		}
-		token, err := suite.service.Login(context.Background(), creds)
+		token, err := s.service.Login(context.Background(), creds)
 		require.Nil(t, err)
-		parsedToken, err := suite.jwt.ParseToken(token.AuthToken)
+		parsedToken, err := s.jwt.ParseToken(token.AuthToken)
 		require.Nil(t, err)
 		require.True(t, parsedToken.Valid)
 	})
@@ -73,22 +73,21 @@ func (suite *UserServiceTestSuite) TestLogin() {
 			Email:    user.Email,
 			Password: "incorrect_password",
 		}
-		token, err := suite.service.Login(context.Background(), creds)
+		token, err := s.service.Login(context.Background(), creds)
 		require.Error(t, err)
 		require.Zero(t, token)
 	})
 
 	t.Run("when user does not exist", func(t *testing.T) {
-		suite.repo.
+		s.repo.
 			On("SelectUserByEmail", mock.Anything, "nobody@example.com").
 			Return(domain.User{}, fmt.Errorf("record not forund"))
 		creds := &domain.UserLogin{
 			Email:    "nobody@example.com",
 			Password: password,
 		}
-		token, err := suite.service.Login(context.Background(), creds)
+		token, err := s.service.Login(context.Background(), creds)
 		require.Error(t, err)
 		require.Zero(t, token)
 	})
-
 }

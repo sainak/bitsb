@@ -12,7 +12,10 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+type ContextKey string
+
 const UserID = "user_id"
+const ContextUserKey ContextKey = UserID
 
 type JWT struct {
 	Secret                    string
@@ -20,7 +23,7 @@ type JWT struct {
 	AuthTokenLifespanMinutes  time.Duration
 }
 
-func New(secret string, refreshTokenLifespanHours, authTokenLifespanMinutes string) *JWT {
+func New(secret, refreshTokenLifespanHours, authTokenLifespanMinutes string) *JWT {
 	_refreshTokenLifespanHours, _ := strconv.Atoi(refreshTokenLifespanHours)
 	if _refreshTokenLifespanHours == 0 {
 		_refreshTokenLifespanHours = 24
@@ -83,7 +86,7 @@ func (j *JWT) ParseToken(tokenString string) (*jwt.Token, error) {
 	return token, nil
 }
 
-func (j *JWT) GetUserId(t string) (int64, error) {
+func (j *JWT) GetUserID(t string) (int64, error) {
 	token, err := j.ParseToken(t)
 	if err != nil {
 		return 0, err
@@ -132,13 +135,13 @@ func Authenticator(j *JWT) func(next http.Handler) http.Handler {
 				render.JSON(w, r, render.M{"message": "auth token not provided"})
 				return
 			}
-			id, err := j.GetUserId(bearerToken[1])
+			id, err := j.GetUserID(bearerToken[1])
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				render.JSON(w, r, render.M{"message": err.Error()})
 				return
 			}
-			ctx := context.WithValue(r.Context(), UserID, id)
+			ctx := context.WithValue(r.Context(), ContextUserKey, id)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

@@ -18,6 +18,6 @@ func RespondForError(w http.ResponseWriter, r *http.Request, err error) {
 	}
 	er.Message = err.Error()
 	// todo: set status
-	render.Status(r, 400)
+	render.Status(r, http.StatusBadRequest)
 	render.JSON(w, r, er)
 }

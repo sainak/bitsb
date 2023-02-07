@@ -86,7 +86,7 @@ func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(jwt.UserID).(int64)
+	userID := r.Context().Value(jwt.ContextUserKey).(int64)
 	user, err := u.service.GetUserByID(r.Context(), userID)
 	if err != nil {
 		response.RespondForError(w, r, err)
