@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"gopkg.in/guregu/null.v4"
@@ -27,20 +28,36 @@ type User struct {
 }
 
 type UserLogin struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func (u UserLogin) Bind(r *http.Request) error {
+	return nil
 }
 
 type UserRegister struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+	FirstName string `json:"first_name"  binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Password  string `json:"password" binding:"required"`
+}
+
+func (u UserRegister) Bind(r *http.Request) error {
+	return nil
 }
 
 type Token struct {
 	AuthToken    string `json:"auth_token"`
 	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshToken struct {
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+func (r2 RefreshToken) Bind(r *http.Request) error {
+	return nil
 }
 
 type UserStorer interface {
