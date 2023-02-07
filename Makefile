@@ -118,9 +118,9 @@ build-race: ## Builds binary (with -race flag)
 		./app/
 	@ echo "done"
 
-go-generate: $(MOCKERY) ## Runs go generte ./...
+mocks: $(MOCKERY) ## Runs go generte ./...
 	@ printf "Generating mocks..."
-	@ go generate ./...
+	@ mockery --all --output ./domain/mocks
 
 
 # ~~~ Database Migrations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -38,9 +38,22 @@ type UserRegister struct {
 	Password  string `json:"password"`
 }
 
+type Token struct {
+	AuthToken    string `json:"auth_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 type UserStorer interface {
 	SelectUserByID(ctx context.Context, id int64) (user User, err error)
 	SelectUserByEmail(ctx context.Context, email string) (user User, err error)
 	InsertUser(ctx context.Context, user *User) (err error)
+	UpdateUser(ctx context.Context, user *User) (err error)
+}
+
+type UserServiceProvider interface {
+	GetUserByID(ctx context.Context, id int64) (user User, err error)
+	Login(ctx context.Context, creds *UserLogin) (token Token, err error)
+	RefreshToken(ctx context.Context, token string) (newToken Token, err error)
+	Signup(ctx context.Context, user *User) (err error)
 	UpdateUser(ctx context.Context, user *User) (err error)
 }

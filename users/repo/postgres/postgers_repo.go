@@ -26,8 +26,7 @@ func New(Conn *sql.DB) domain.UserStorer {
 func (u UserRepository) fetchUser(ctx context.Context, query string, args ...interface{}) (user domain.User, err error) {
 	user = domain.User{}
 
-	row := u.Conn.QueryRowContext(ctx, query, args...)
-	err = row.Scan(
+	err = u.Conn.QueryRowContext(ctx, query, args...).Scan(
 		&user.ID,
 		&user.Email,
 		&user.FirstName,
