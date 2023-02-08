@@ -7,6 +7,7 @@ import (
 
 	locationHandler "github.com/sainak/bitsb/bitsb/delivery/http/handler"
 	"github.com/sainak/bitsb/domain"
+	"github.com/sainak/bitsb/utils/middleware"
 )
 
 func RegisterLocationRoutes(
@@ -20,12 +21,12 @@ func RegisterLocationRoutes(
 		r.Use(jwtMiddleware)
 		r.Route("/locations", func(r chi.Router) {
 			r.Get("/", h.ListAll)
-			r.Post("/", h.Create)
+			r.With(middleware.AccessAbove(domain.Admin)).Post("/", h.Create)
 		})
 		r.Route("/location", func(r chi.Router) {
 			r.Get("/{id}", h.GetByID)
-			r.Patch("/{id}", h.Update)
-			r.Delete("/{id}", h.Delete)
+			r.With(middleware.AccessAbove(domain.Admin)).Patch("/{id}", h.Update)
+			r.With(middleware.AccessAbove(domain.Admin)).Delete("/{id}", h.Delete)
 		})
 	})
 }
@@ -41,12 +42,12 @@ func RegisterCompanyRoutes(
 		r.Use(jwtMiddleware)
 		r.Route("/companies", func(r chi.Router) {
 			r.Get("/", h.ListAll)
-			r.Post("/", h.Create)
+			r.With(middleware.AccessAbove(domain.Admin)).Post("/", h.Create)
 		})
 		r.Route("/company", func(r chi.Router) {
 			r.Get("/{id}", h.GetByID)
-			r.Patch("/{id}", h.Update)
-			r.Delete("/{id}", h.Delete)
+			r.With(middleware.AccessAbove(domain.Admin)).Patch("/{id}", h.Update)
+			r.With(middleware.AccessAbove(domain.Admin)).Delete("/{id}", h.Delete)
 		})
 	})
 }

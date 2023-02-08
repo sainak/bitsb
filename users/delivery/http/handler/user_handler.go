@@ -75,6 +75,7 @@ func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 		LastName:  data.LastName,
 		Email:     data.Email,
 		Password:  data.Password,
+		Access:    domain.Passenger,
 	}
 
 	err = u.service.Signup(r.Context(), user)
