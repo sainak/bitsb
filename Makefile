@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: build bin make
+.PHONY: build bin make migrations
 
 # --- Tooling & Variables ----------------------------------------------------------------
 # Exporting bin folder to the path for makefile
@@ -118,30 +118,27 @@ build-race: ## Builds binary (with -race flag)
 		./app/
 	@ echo "done"
 
-go-generate: $(MOCKERY) ## Runs go generte ./...
+mocks: $(MOCKERY) ## Runs go generte ./...
 	@ printf "Generating mocks..."
-	@ go generate ./...
+	@ mockery --all --output ./domain/mocks
 
 
 # ~~~ Database Migrations ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 migrate-up: $(MIGRATE) ## Apply all (or N up) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
-	migrate  -database "${DB_DSN}" -path=misc/migrations up ${NN}
+	migrate  -database "${DB_DSN}" -path=migrations up ${NN}
 
-.PHONY: migrate-down
 migrate-down: $(MIGRATE) ## Apply all (or N down) migrations.
 	@ read -p "How many migration you wants to perform (default value: [all]): " N; \
 	migrate  -database "${DB_DSN}" -path=migrations down ${NN}
 
-.PHONY: migrate-drop
 migrate-drop: $(MIGRATE) ## Drop everything inside the database.
 	migrate  -database "${DB_DSN}" -path=migrations drop
 
-.PHONY: migrate-create
-migrate-create: $(MIGRATE) ## Create a set of up/down migrations with a specified name.
+migrations: $(MIGRATE) ## Create a set of up/down migrations with a specified name.
 	@ read -p "Please provide name for the migration: " Name; \
-	migrate create -ext sql -dir misc/migrations $${Name}
+	migrate create -ext sql -dir migrations $${Name}
 
 
 # ~~~ Cleanup ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

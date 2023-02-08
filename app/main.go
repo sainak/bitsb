@@ -14,7 +14,15 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	_bitsbRouter "github.com/sainak/bitsb/bitsb/delivery/http/router"
+	_bitsbRepo "github.com/sainak/bitsb/bitsb/repo/postgres"
+	_bitsbService "github.com/sainak/bitsb/bitsb/service"
 	_rootRouter "github.com/sainak/bitsb/root/delivery/http/router"
+	_userRouter "github.com/sainak/bitsb/users/delivery/http/router"
+	_userRepo "github.com/sainak/bitsb/users/repo/postgres"
+	_userService "github.com/sainak/bitsb/users/service"
+	"github.com/sainak/bitsb/utils/jwt"
+	middl "github.com/sainak/bitsb/utils/middleware"
 )
 
 var (
@@ -76,6 +84,7 @@ func main() {
 	})
 
 	dsn := viper.GetString("DB_DSN")
+	logrus.Info("DB_DSN: ", dsn)
 	dbConn, err := sql.Open(`postgres`, dsn)
 	if err != nil {
 		logrus.Fatal(err)
@@ -92,12 +101,22 @@ func main() {
 		}
 	}()
 
+	timeout := time.Duration(viper.GetInt("SERVER_TIMEOUT")) * time.Second
+
+	jwtInstance := jwt.New(
+		viper.GetString("JWT_SECRET"),
+		viper.GetString("JWT_EXPIRY"),
+		viper.GetString("JWT_REFRESH_EXPIRY"),
+	)
+
 	r := chi.NewRouter()
 
+	r.Use(middleware.CleanPath)
+	r.Use(middleware.StripSlashes)
+	r.Use(middleware.URLFormat)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
 	r.Use(middleware.Recoverer)
 	// Important: Chi has a middleware stack and thus it is important to put the
 	// Sentry handler on the appropriate place. If using middleware.Recoverer,
@@ -107,16 +126,28 @@ func main() {
 
 	_rootRouter.RegisterRoutes(r)
 
+	userRepo := _userRepo.NewUserRepository(dbConn)
+	locationRepo := _bitsbRepo.NewLocationRepository(dbConn)
+	companyRepo := _bitsbRepo.NewCompanyRepository(dbConn)
+
+	userService := _userService.NewUserService(userRepo, jwtInstance, timeout)
+	locationService := _bitsbService.NewLocationService(locationRepo)
+	companyService := _bitsbService.NewCompanyService(companyRepo)
+
+	jwtMiddleware := middl.JWTAuth(jwtInstance, userRepo)
+
+	_userRouter.RegisterRoutes(r, userService, jwtMiddleware)
+	_bitsbRouter.RegisterLocationRoutes(r, locationService, jwtMiddleware)
+	_bitsbRouter.RegisterCompanyRoutes(r, companyService, jwtMiddleware)
+
 	if viper.GetBool("SERVER_DEBUG") {
 		r.Mount("/debug", middleware.Profiler())
 	}
 
-	timeout := viper.GetInt("SERVER_TIMEOUT")
-
 	server := &http.Server{
 		Addr:              ":" + viper.GetString("WEBSITE_PORT"),
 		Handler:           r,
-		ReadHeaderTimeout: time.Duration(timeout) * time.Second,
+		ReadHeaderTimeout: timeout,
 	}
 	logrus.Println("Listening on: http://0.0.0.0" + server.Addr)
 	err = server.ListenAndServe()

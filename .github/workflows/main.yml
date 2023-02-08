@@ -6,7 +6,7 @@ on:
     branches:
       - main
       - dev
-    pull_request:
+  pull_request:
 
 env:
   REGISTRY: ghcr.io
@@ -78,7 +78,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ hashFiles('go.mod', 'go.sum', 'Dockerfile') }}
@@ -108,6 +108,21 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Prune old images
+        uses: vlaurin/action-ghcr-prune@v0.5.0
+        continue-on-error: true
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          organization: ${{ github.repository_owner }}
+          container: ${{ env.IMAGE_NAME }}
+          keep-younger-than: 7 # days
+          keep-last: 5
+          prune-untagged: true
+          keep-tags-regexes: |
+            latest
+            staging-latest
+            \d+\.\d+
 
   deploy-production:
     environment:

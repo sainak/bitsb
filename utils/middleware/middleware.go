@@ -1,0 +1,12 @@
+package middleware
+
+// ContextKey is a value for use with context.WithValue. It's used as
+// a pointer so it fits in an interface{} without allocation. This technique
+// for defining context keys was copied from Go 1.7's new use of context in net/http.
+type ContextKey struct {
+	name string
+}
+
+func (k *ContextKey) String() string {
+	return "context value " + k.name
+}
