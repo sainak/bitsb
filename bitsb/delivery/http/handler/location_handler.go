@@ -26,14 +26,7 @@ func NewLocationHandler(service domain.LocationServiceProvider) *LocationHandler
 func (l *LocationHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	cursor := r.URL.Query().Get("cursor")
-	limit := func() int {
-		_limit := r.URL.Query().Get("limit")
-		ret, err := strconv.Atoi(_limit)
-		if _limit == "" || err != nil {
-			return 10
-		}
-		return ret
-	}()
+	limit := getLimit(r)
 
 	logrus.Print("query: ", query)
 
@@ -42,7 +35,7 @@ func (l *LocationHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 		filters["name:ilike"] = query
 	}
 
-	locations, nextCursor, err := l.service.ListAll(r.Context(), cursor, int64(limit), filters)
+	locations, nextCursor, err := l.service.ListAll(r.Context(), cursor, limit, filters)
 
 	if err != nil {
 		response.RespondForError(w, r, err)

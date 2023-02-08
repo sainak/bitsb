@@ -11,9 +11,9 @@ type LocationService struct {
 	repo domain.LocationStorer
 }
 
-func NewLocationService(repo domain.LocationStorer) domain.LocationServiceProvider {
+func NewLocationService(r domain.LocationStorer) domain.LocationServiceProvider {
 	return &LocationService{
-		repo: repo,
+		repo: r,
 	}
 }
 

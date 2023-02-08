@@ -25,21 +25,14 @@ func NewCompanyHandler(service domain.CompanyServiceProvider) *CompanyHandler {
 func (h CompanyHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	cursor := r.URL.Query().Get("cursor")
-	limit := func() int {
-		_limit := r.URL.Query().Get("limit")
-		ret, err := strconv.Atoi(_limit)
-		if _limit == "" || err != nil {
-			return 10
-		}
-		return ret
-	}()
+	limit := getLimit(r)
 
 	filters := make(repo.Filters)
 	if query != "" {
 		filters["name:ilike"] = query
 	}
 
-	companies, nextCursor, err := h.service.ListAll(r.Context(), cursor, int64(limit), filters)
+	companies, nextCursor, err := h.service.ListAll(r.Context(), cursor, limit, filters)
 
 	if err != nil {
 		response.RespondForError(w, r, err)

@@ -11,9 +11,9 @@ type CompanyService struct {
 	repo domain.CompanyStorer
 }
 
-func NewCompanyService(repo domain.CompanyStorer) domain.CompanyServiceProvider {
+func NewCompanyService(r domain.CompanyStorer) domain.CompanyServiceProvider {
 	return &CompanyService{
-		repo: repo,
+		repo: r,
 	}
 }
 
