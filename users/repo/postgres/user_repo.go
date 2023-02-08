@@ -19,7 +19,7 @@ var (
 								VALUES ($1, $2, $3, $4, $5, $6, $7) 
 								RETURNING id`
 	updateUserQuery = `UPDATE users 
-								SET email=$2, first_name=$3, last_name=$4, password=$5, updated_at=$6 
+								SET email=$2, first_name=$3, last_name=$4, password=$5, last_login=$6, updated_at=$7 
 								WHERE id=$1`
 )
 
@@ -85,6 +85,7 @@ func (u UserRepository) Update(ctx context.Context, user *domain.User) (err erro
 		user.FirstName,
 		user.LastName,
 		user.Password,
+		user.LastLogin,
 		user.UpdatedAt,
 	)
 	if err != nil {

@@ -15,14 +15,15 @@ func RegisterRoutes(
 	jwtMiddleware func(next http.Handler) http.Handler,
 ) {
 	h := handler.New(service)
-	r := chi.NewRouter()
 
-	r.Post("/login", h.Login)
-	r.Post("/refresh", h.Refresh)
-	r.Post("/register", h.Register)
-	r.Route("/user", func(r chi.Router) {
-		r.Use(jwtMiddleware)
-		r.Get("/", h.GetCurrentUser)
+	router.Route("/auth", func(r chi.Router) {
+		r.Post("/login", h.Login)
+		r.Post("/refresh", h.Refresh)
+		r.Post("/register", h.Register)
 	})
-	router.Mount("/auth", r)
+
+	router.Group(func(r chi.Router) {
+		r.Use(jwtMiddleware)
+		r.Get("/user", h.GetCurrentUser)
+	})
 }

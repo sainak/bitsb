@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/guregu/null.v4"
 
 	"github.com/sainak/bitsb/domain"
 	"github.com/sainak/bitsb/domain/errors"
@@ -46,6 +47,13 @@ func (u UserService) Login(ctx context.Context, creds *domain.UserLoginForm) (to
 	if err != nil {
 		// wrong password
 		err = errors.ErrInvalidCredentials
+		return
+	}
+
+	// update last login
+	user.LastLogin = null.TimeFrom(time.Now())
+	err = u.repo.Update(ctx, &user)
+	if err != nil {
 		return
 	}
 
