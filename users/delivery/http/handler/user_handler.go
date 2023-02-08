@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/render"
 
 	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/utils/jwt"
+	"github.com/sainak/bitsb/utils/middleware"
 	"github.com/sainak/bitsb/utils/response"
 )
 
@@ -86,11 +86,6 @@ func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(jwt.ContextUserKey).(int64)
-	user, err := u.service.GetByID(r.Context(), userID)
-	if err != nil {
-		response.RespondForError(w, r, err)
-		return
-	}
+	user := r.Context().Value(middleware.UserCtxKey).(*domain.User)
 	render.JSON(w, r, user)
 }

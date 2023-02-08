@@ -19,6 +19,7 @@ import (
 	_userRepo "github.com/sainak/bitsb/users/repo/postgres"
 	_userService "github.com/sainak/bitsb/users/service"
 	"github.com/sainak/bitsb/utils/jwt"
+	middl "github.com/sainak/bitsb/utils/middleware"
 )
 
 var (
@@ -121,7 +122,8 @@ func main() {
 
 	userRepo := _userRepo.NewUserRepository(dbConn)
 	userService := _userService.NewUserService(userRepo, jwtInstance, timeout)
-	_userRouter.RegisterRoutes(r, userService, jwtInstance)
+	jwtMiddleware := middl.JWTAuth(jwtInstance, userRepo)
+	_userRouter.RegisterRoutes(r, userService, jwtMiddleware)
 
 	if viper.GetBool("SERVER_DEBUG") {
 		r.Mount("/debug", middleware.Profiler())
