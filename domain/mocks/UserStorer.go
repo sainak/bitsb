@@ -14,8 +14,8 @@ type UserStorer struct {
 	mock.Mock
 }
 
-// InsertUser provides a mock function with given fields: ctx, user
-func (_m *UserStorer) InsertUser(ctx context.Context, user *domain.User) error {
+// Insert provides a mock function with given fields: ctx, user
+func (_m *UserStorer) Insert(ctx context.Context, user *domain.User) error {
 	ret := _m.Called(ctx, user)
 
 	var r0 error
@@ -28,8 +28,8 @@ func (_m *UserStorer) InsertUser(ctx context.Context, user *domain.User) error {
 	return r0
 }
 
-// SelectUserByEmail provides a mock function with given fields: ctx, email
-func (_m *UserStorer) SelectUserByEmail(ctx context.Context, email string) (domain.User, error) {
+// SelectByEmail provides a mock function with given fields: ctx, email
+func (_m *UserStorer) SelectByEmail(ctx context.Context, email string) (domain.User, error) {
 	ret := _m.Called(ctx, email)
 
 	var r0 domain.User
@@ -49,8 +49,8 @@ func (_m *UserStorer) SelectUserByEmail(ctx context.Context, email string) (doma
 	return r0, r1
 }
 
-// SelectUserByID provides a mock function with given fields: ctx, id
-func (_m *UserStorer) SelectUserByID(ctx context.Context, id int64) (domain.User, error) {
+// SelectByID provides a mock function with given fields: ctx, id
+func (_m *UserStorer) SelectByID(ctx context.Context, id int64) (domain.User, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 domain.User
@@ -70,8 +70,8 @@ func (_m *UserStorer) SelectUserByID(ctx context.Context, id int64) (domain.User
 	return r0, r1
 }
 
-// UpdateUser provides a mock function with given fields: ctx, user
-func (_m *UserStorer) UpdateUser(ctx context.Context, user *domain.User) error {
+// Update provides a mock function with given fields: ctx, user
+func (_m *UserStorer) Update(ctx context.Context, user *domain.User) error {
 	ret := _m.Called(ctx, user)
 
 	var r0 error

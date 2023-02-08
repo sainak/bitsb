@@ -27,23 +27,23 @@ type User struct {
 	UpdatedAt time.Time   `json:"updated_at" db:"updated_at"`
 }
 
-type UserLogin struct {
+type UserLoginForm struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
-func (u UserLogin) Bind(r *http.Request) error {
+func (u UserLoginForm) Bind(r *http.Request) error {
 	return nil
 }
 
-type UserRegister struct {
+type UserRegisterForm struct {
 	FirstName string `json:"first_name"  binding:"required"`
 	LastName  string `json:"last_name" binding:"required"`
 	Email     string `json:"email" binding:"required"`
 	Password  string `json:"password" binding:"required"`
 }
 
-func (u UserRegister) Bind(r *http.Request) error {
+func (u UserRegisterForm) Bind(r *http.Request) error {
 	return nil
 }
 
@@ -52,25 +52,25 @@ type Token struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-type RefreshToken struct {
+type RefreshTokenFrom struct {
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
-func (r2 RefreshToken) Bind(r *http.Request) error {
+func (r2 RefreshTokenFrom) Bind(r *http.Request) error {
 	return nil
 }
 
 type UserStorer interface {
-	SelectUserByID(ctx context.Context, id int64) (user User, err error)
-	SelectUserByEmail(ctx context.Context, email string) (user User, err error)
-	InsertUser(ctx context.Context, user *User) (err error)
-	UpdateUser(ctx context.Context, user *User) (err error)
+	SelectByID(ctx context.Context, id int64) (user User, err error)
+	SelectByEmail(ctx context.Context, email string) (user User, err error)
+	Insert(ctx context.Context, user *User) (err error)
+	Update(ctx context.Context, user *User) (err error)
 }
 
 type UserServiceProvider interface {
-	GetUserByID(ctx context.Context, id int64) (user User, err error)
-	Login(ctx context.Context, creds *UserLogin) (token Token, err error)
+	GetByID(ctx context.Context, id int64) (user User, err error)
+	Login(ctx context.Context, creds *UserLoginForm) (token Token, err error)
 	RefreshToken(ctx context.Context, token string) (newToken Token, err error)
 	Signup(ctx context.Context, user *User) (err error)
-	UpdateUser(ctx context.Context, user *User) (err error)
+	Update(ctx context.Context, user *User) (err error)
 }

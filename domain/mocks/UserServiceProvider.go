@@ -14,8 +14,8 @@ type UserServiceProvider struct {
 	mock.Mock
 }
 
-// GetUserByID provides a mock function with given fields: ctx, id
-func (_m *UserServiceProvider) GetUserByID(ctx context.Context, id int64) (domain.User, error) {
+// GetByID provides a mock function with given fields: ctx, id
+func (_m *UserServiceProvider) GetByID(ctx context.Context, id int64) (domain.User, error) {
 	ret := _m.Called(ctx, id)
 
 	var r0 domain.User
@@ -36,18 +36,18 @@ func (_m *UserServiceProvider) GetUserByID(ctx context.Context, id int64) (domai
 }
 
 // Login provides a mock function with given fields: ctx, creds
-func (_m *UserServiceProvider) Login(ctx context.Context, creds *domain.UserLogin) (domain.Token, error) {
+func (_m *UserServiceProvider) Login(ctx context.Context, creds *domain.UserLoginForm) (domain.Token, error) {
 	ret := _m.Called(ctx, creds)
 
 	var r0 domain.Token
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserLogin) domain.Token); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserLoginForm) domain.Token); ok {
 		r0 = rf(ctx, creds)
 	} else {
 		r0 = ret.Get(0).(domain.Token)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.UserLogin) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *domain.UserLoginForm) error); ok {
 		r1 = rf(ctx, creds)
 	} else {
 		r1 = ret.Error(1)
@@ -57,14 +57,14 @@ func (_m *UserServiceProvider) Login(ctx context.Context, creds *domain.UserLogi
 }
 
 // RefreshToken provides a mock function with given fields: ctx, token
-func (_m *UserServiceProvider) RefreshToken(ctx context.Context, token string) (string, error) {
+func (_m *UserServiceProvider) RefreshToken(ctx context.Context, token string) (domain.Token, error) {
 	ret := _m.Called(ctx, token)
 
-	var r0 string
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+	var r0 domain.Token
+	if rf, ok := ret.Get(0).(func(context.Context, string) domain.Token); ok {
 		r0 = rf(ctx, token)
 	} else {
-		r0 = ret.Get(0).(string)
+		r0 = ret.Get(0).(domain.Token)
 	}
 
 	var r1 error
@@ -91,8 +91,8 @@ func (_m *UserServiceProvider) Signup(ctx context.Context, user *domain.User) er
 	return r0
 }
 
-// UpdateUser provides a mock function with given fields: ctx, user
-func (_m *UserServiceProvider) UpdateUser(ctx context.Context, user *domain.User) error {
+// Update provides a mock function with given fields: ctx, user
+func (_m *UserServiceProvider) Update(ctx context.Context, user *domain.User) error {
 	ret := _m.Called(ctx, user)
 
 	var r0 error

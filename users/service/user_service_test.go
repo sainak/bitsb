@@ -30,7 +30,7 @@ func TestUserServiceTestSuite(t *testing.T) {
 func (s *UserServiceTestSuite) SetupTest() {
 	s.repo = mocks.NewUserStorer(s.T())
 	s.jwt = jwt.New("test_secret", "24", "5")
-	s.service = New(s.repo, s.jwt, 0)
+	s.service = NewUserService(s.repo, s.jwt, 0)
 }
 
 func (s *UserServiceTestSuite) TestLogin() {
@@ -54,9 +54,9 @@ func (s *UserServiceTestSuite) TestLogin() {
 	}
 	t.Run("when login is successful", func(t *testing.T) {
 		s.repo.
-			On("SelectUserByEmail", mock.Anything, user.Email).
+			On("SelectByEmail", mock.Anything, user.Email).
 			Return(user, nil)
-		creds := &domain.UserLogin{
+		creds := &domain.UserLoginForm{
 			Email:    user.Email,
 			Password: password,
 		}
@@ -69,7 +69,7 @@ func (s *UserServiceTestSuite) TestLogin() {
 
 	t.Run("when password is incorrect", func(t *testing.T) {
 		// reuse mock result from previous function
-		creds := &domain.UserLogin{
+		creds := &domain.UserLoginForm{
 			Email:    user.Email,
 			Password: "incorrect_password",
 		}
@@ -80,9 +80,9 @@ func (s *UserServiceTestSuite) TestLogin() {
 
 	t.Run("when user does not exist", func(t *testing.T) {
 		s.repo.
-			On("SelectUserByEmail", mock.Anything, "nobody@example.com").
+			On("SelectByEmail", mock.Anything, "nobody@example.com").
 			Return(domain.User{}, fmt.Errorf("record not forund"))
-		creds := &domain.UserLogin{
+		creds := &domain.UserLoginForm{
 			Email:    "nobody@example.com",
 			Password: password,
 		}

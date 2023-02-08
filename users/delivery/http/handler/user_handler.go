@@ -22,7 +22,7 @@ func New(service domain.UserServiceProvider) *UserHandler {
 }
 
 func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	data := &domain.UserLogin{}
+	data := &domain.UserLoginForm{}
 	err := render.Bind(r, data)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
@@ -41,7 +41,7 @@ func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	data := &domain.RefreshToken{}
+	data := &domain.RefreshTokenFrom{}
 	err := render.Bind(r, data)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
@@ -60,7 +60,7 @@ func (u *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	data := &domain.UserRegister{}
+	data := &domain.UserRegisterForm{}
 	err := render.Bind(r, data)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
@@ -87,7 +87,7 @@ func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 func (u *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(jwt.ContextUserKey).(int64)
-	user, err := u.service.GetUserByID(r.Context(), userID)
+	user, err := u.service.GetByID(r.Context(), userID)
 	if err != nil {
 		response.RespondForError(w, r, err)
 		return

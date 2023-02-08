@@ -119,8 +119,8 @@ func main() {
 
 	_rootRouter.RegisterRoutes(r)
 
-	userRepo := _userRepo.New(dbConn)
-	userService := _userService.New(userRepo, jwtInstance, timeout)
+	userRepo := _userRepo.NewUserRepository(dbConn)
+	userService := _userService.NewUserService(userRepo, jwtInstance, timeout)
 	_userRouter.RegisterRoutes(r, userService, jwtInstance)
 
 	if viper.GetBool("SERVER_DEBUG") {

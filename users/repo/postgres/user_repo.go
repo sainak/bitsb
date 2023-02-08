@@ -27,7 +27,7 @@ type UserRepository struct {
 	Conn *sql.DB
 }
 
-func New(conn *sql.DB) domain.UserStorer {
+func NewUserRepository(conn *sql.DB) domain.UserStorer {
 	return &UserRepository{conn}
 }
 
@@ -48,15 +48,15 @@ func (u UserRepository) fetchUser(ctx context.Context, query string, args ...int
 	return
 }
 
-func (u UserRepository) SelectUserByID(ctx context.Context, id int64) (user domain.User, err error) {
+func (u UserRepository) SelectByID(ctx context.Context, id int64) (user domain.User, err error) {
 	return u.fetchUser(ctx, selectUserByIDQuery, id)
 }
 
-func (u UserRepository) SelectUserByEmail(ctx context.Context, email string) (user domain.User, err error) {
+func (u UserRepository) SelectByEmail(ctx context.Context, email string) (user domain.User, err error) {
 	return u.fetchUser(ctx, selectUserByEmailQuery, email)
 }
 
-func (u UserRepository) InsertUser(ctx context.Context, user *domain.User) (err error) {
+func (u UserRepository) Insert(ctx context.Context, user *domain.User) (err error) {
 	currentTime := time.Now()
 	user.CreatedAt = currentTime
 	user.UpdatedAt = currentTime
@@ -75,7 +75,7 @@ func (u UserRepository) InsertUser(ctx context.Context, user *domain.User) (err 
 	return
 }
 
-func (u UserRepository) UpdateUser(ctx context.Context, user *domain.User) (err error) {
+func (u UserRepository) Update(ctx context.Context, user *domain.User) (err error) {
 	user.UpdatedAt = time.Now()
 	result, err := u.Conn.ExecContext(
 		ctx,

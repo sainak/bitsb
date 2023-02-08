@@ -26,7 +26,7 @@ type UserService struct {
 	contextTimeout time.Duration
 }
 
-func New(repo domain.UserStorer, jwtInstance *jwt.JWT, timeout time.Duration) domain.UserServiceProvider {
+func NewUserService(repo domain.UserStorer, jwtInstance *jwt.JWT, timeout time.Duration) domain.UserServiceProvider {
 	return &UserService{
 		repo:           repo,
 		jwt:            jwtInstance,
@@ -34,9 +34,9 @@ func New(repo domain.UserStorer, jwtInstance *jwt.JWT, timeout time.Duration) do
 	}
 }
 
-func (u UserService) Login(ctx context.Context, creds *domain.UserLogin) (token domain.Token, err error) {
+func (u UserService) Login(ctx context.Context, creds *domain.UserLoginForm) (token domain.Token, err error) {
 	token = domain.Token{}
-	user, err := u.repo.SelectUserByEmail(ctx, creds.Email)
+	user, err := u.repo.SelectByEmail(ctx, creds.Email)
 	if err != nil {
 		// user not found
 		err = errors.ErrInvalidCredentials
@@ -66,8 +66,8 @@ func (u UserService) RefreshToken(ctx context.Context, refreshToken string) (new
 	return
 }
 
-func (u UserService) GetUserByID(ctx context.Context, id int64) (user domain.User, err error) {
-	return u.repo.SelectUserByID(ctx, id)
+func (u UserService) GetByID(ctx context.Context, id int64) (user domain.User, err error) {
+	return u.repo.SelectByID(ctx, id)
 }
 
 func (u UserService) Signup(ctx context.Context, user *domain.User) (err error) {
@@ -76,9 +76,9 @@ func (u UserService) Signup(ctx context.Context, user *domain.User) (err error) 
 		return
 	}
 	user.Password = hashedPassword
-	return u.repo.InsertUser(ctx, user)
+	return u.repo.Insert(ctx, user)
 }
 
-func (u UserService) UpdateUser(ctx context.Context, user *domain.User) (err error) {
-	return u.repo.UpdateUser(ctx, user)
+func (u UserService) Update(ctx context.Context, user *domain.User) (err error) {
+	return u.repo.Update(ctx, user)
 }

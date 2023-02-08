@@ -29,7 +29,7 @@ func (s *UserRepositoryTestSuite) SetupTest() {
 	}
 	s.db = db
 	s.mock = mock
-	s.repo = New(db)
+	s.repo = NewUserRepository(db)
 }
 
 func TestUserRepositoryTestSuite(t *testing.T) {
@@ -75,7 +75,7 @@ func (s *UserRepositoryTestSuite) TestSelectUser() {
 					user.UpdatedAt,
 				),
 			)
-		res, err := s.repo.SelectUserByID(context.Background(), user.ID)
+		res, err := s.repo.SelectByID(context.Background(), user.ID)
 		assert.Nil(t, err)
 		assert.Equal(t, user, &res)
 	})
@@ -107,7 +107,7 @@ func (s *UserRepositoryTestSuite) TestSelectUser() {
 					user.UpdatedAt,
 				),
 			)
-		res, err := s.repo.SelectUserByEmail(context.Background(), user.Email)
+		res, err := s.repo.SelectByEmail(context.Background(), user.Email)
 		assert.Nil(t, err)
 		assert.Equal(t, user, &res)
 	})
@@ -116,7 +116,7 @@ func (s *UserRepositoryTestSuite) TestSelectUser() {
 		s.mock.ExpectQuery("SELECT (.+) FROM users").
 			WithArgs(user.ID).
 			WillReturnError(sql.ErrNoRows)
-		_, err := s.repo.SelectUserByID(context.Background(), user.ID)
+		_, err := s.repo.SelectByID(context.Background(), user.ID)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
@@ -160,7 +160,7 @@ func (s *UserRepositoryTestSuite) TestInsertUser() {
 			WillReturnRows(
 				sqlmock.NewRows([]string{"id"}).AddRow(user.ID),
 			)
-		err = s.repo.InsertUser(context.Background(), user)
+		err = s.repo.Insert(context.Background(), user)
 		assert.Nil(t, err)
 		assert.Equal(t, int64(1), user.ID)
 		assert.Equal(t, user.CreatedAt, time.Now())
@@ -178,7 +178,7 @@ func (s *UserRepositoryTestSuite) TestInsertUser() {
 				time.Now(),
 			).
 			WillReturnError(sql.ErrNoRows)
-		err := s.repo.InsertUser(context.Background(), user)
+		err := s.repo.Insert(context.Background(), user)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
@@ -224,7 +224,7 @@ func (s *UserRepositoryTestSuite) TestUpdateUser() {
 			WillReturnResult(
 				sqlmock.NewResult(1, 1),
 			)
-		err := s.repo.UpdateUser(context.Background(), user)
+		err := s.repo.Update(context.Background(), user)
 		assert.Nil(t, err)
 		assert.Equal(t, user.UpdatedAt, time.Now())
 	})
@@ -242,7 +242,7 @@ func (s *UserRepositoryTestSuite) TestUpdateUser() {
 			WillReturnResult(
 				sqlmock.NewResult(0, 0),
 			)
-		err := s.repo.UpdateUser(context.Background(), user)
+		err := s.repo.Update(context.Background(), user)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 
@@ -257,7 +257,7 @@ func (s *UserRepositoryTestSuite) TestUpdateUser() {
 				time.Now(),
 			).
 			WillReturnError(sql.ErrNoRows)
-		err := s.repo.UpdateUser(context.Background(), user)
+		err := s.repo.Update(context.Background(), user)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	})
 }
