@@ -11,8 +11,8 @@ import (
 type AccessLevel int
 
 const (
-	Admin     AccessLevel = 1
-	Passenger AccessLevel = 1000
+	Admin     AccessLevel = 1000
+	Passenger AccessLevel = 10
 )
 
 type User struct {
