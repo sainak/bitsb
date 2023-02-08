@@ -14,6 +14,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 
+	_bitsbRouter "github.com/sainak/bitsb/bitsb/delivery/http/router"
+	_bitsbRepo "github.com/sainak/bitsb/bitsb/repo/postgres"
+	_bitsbService "github.com/sainak/bitsb/bitsb/service"
 	_rootRouter "github.com/sainak/bitsb/root/delivery/http/router"
 	_userRouter "github.com/sainak/bitsb/users/delivery/http/router"
 	_userRepo "github.com/sainak/bitsb/users/repo/postgres"
@@ -108,6 +111,9 @@ func main() {
 
 	r := chi.NewRouter()
 
+	r.Use(middleware.CleanPath)
+	r.Use(middleware.StripSlashes)
+	r.Use(middleware.URLFormat)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
@@ -121,9 +127,18 @@ func main() {
 	_rootRouter.RegisterRoutes(r)
 
 	userRepo := _userRepo.NewUserRepository(dbConn)
+	locationRepo := _bitsbRepo.NewLocationRepository(dbConn)
+	companyRepo := _bitsbRepo.NewCompanyRepository(dbConn)
+
 	userService := _userService.NewUserService(userRepo, jwtInstance, timeout)
+	locationService := _bitsbService.NewLocationService(locationRepo)
+	companyService := _bitsbService.NewCompanyService(companyRepo)
+
 	jwtMiddleware := middl.JWTAuth(jwtInstance, userRepo)
+
 	_userRouter.RegisterRoutes(r, userService, jwtMiddleware)
+	_bitsbRouter.RegisterLocationRoutes(r, locationService, jwtMiddleware)
+	_bitsbRouter.RegisterCompanyRoutes(r, companyService, jwtMiddleware)
 
 	if viper.GetBool("SERVER_DEBUG") {
 		r.Mount("/debug", middleware.Profiler())
