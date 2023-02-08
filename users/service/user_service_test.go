@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"github.com/undefinedlabs/go-mpatch"
 	"gopkg.in/guregu/null.v4"
 
 	"github.com/sainak/bitsb/domain"
@@ -36,6 +37,19 @@ func (s *UserServiceTestSuite) SetupTest() {
 func (s *UserServiceTestSuite) TestLogin() {
 	t := s.T()
 
+	patch, err := mpatch.PatchMethod(time.Now, func() time.Time {
+		return time.Date(2020, 11, 01, 00, 00, 00, 0, time.UTC)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func(patch *mpatch.Patch) {
+		err := patch.Unpatch()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}(patch)
+
 	password := "test_pass"
 	p, err := hashPassword(password)
 	if err != nil {
@@ -48,7 +62,7 @@ func (s *UserServiceTestSuite) TestLogin() {
 		Email:     "testuser@email.com",
 		Password:  p,
 		Access:    domain.Passenger,
-		LastLogin: null.Time{},
+		LastLogin: null.TimeFrom(time.Now()),
 		CreatedAt: time.Time{},
 		UpdatedAt: time.Time{},
 	}
@@ -56,6 +70,9 @@ func (s *UserServiceTestSuite) TestLogin() {
 		s.repo.
 			On("SelectByEmail", mock.Anything, user.Email).
 			Return(user, nil)
+		s.repo.
+			On("Update", mock.Anything, &user).
+			Return(nil)
 		creds := &domain.UserLoginForm{
 			Email:    user.Email,
 			Password: password,
