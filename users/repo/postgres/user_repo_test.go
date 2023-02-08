@@ -219,6 +219,7 @@ func (s *UserRepositoryTestSuite) TestUpdateUser() {
 				user.FirstName,
 				user.LastName,
 				user.Password,
+				user.LastLogin,
 				time.Now(),
 			).
 			WillReturnResult(
@@ -237,6 +238,7 @@ func (s *UserRepositoryTestSuite) TestUpdateUser() {
 				user.FirstName,
 				user.LastName,
 				user.Password,
+				user.LastLogin,
 				time.Now(),
 			).
 			WillReturnResult(
@@ -254,6 +256,7 @@ func (s *UserRepositoryTestSuite) TestUpdateUser() {
 				user.FirstName,
 				user.LastName,
 				user.Password,
+				user.LastLogin,
 				time.Now(),
 			).
 			WillReturnError(sql.ErrNoRows)
