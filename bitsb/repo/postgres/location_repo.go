@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 
 	"github.com/sainak/bitsb/domain"
@@ -89,6 +90,46 @@ func (l LocationRepository) SelectByID(ctx context.Context, id int64) (location 
 	)
 	if err != nil {
 		return
+	}
+	return
+}
+
+func (l LocationRepository) SelectByIDArray(ctx context.Context, ids []int64) (locations []*domain.Location, err error) {
+	query := `
+		WITH location_order AS (
+			SELECT id, row_number() OVER (ORDER BY position) AS order_position
+			FROM unnest(cast($1 as integer[])) WITH ORDINALITY AS t(id, position)
+		)
+		SELECT  locations.id, name, created_at, updated_at
+		FROM locations
+			JOIN location_order
+				ON locations.id = location_order.id
+		ORDER BY location_order.order_position, locations.id
+	`
+	locations = make([]*domain.Location, 0, len(ids))
+	rows, err := l.Conn.QueryContext(ctx, query, pq.Array(ids))
+	if err != nil {
+		return
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}(rows)
+
+	for rows.Next() {
+		location := domain.Location{}
+		err = rows.Scan(
+			&location.ID,
+			&location.Name,
+			&location.CreatedAt,
+			&location.UpdatedAt,
+		)
+		if err != nil {
+			return
+		}
+		locations = append(locations, &location)
 	}
 	return
 }
