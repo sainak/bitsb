@@ -128,17 +128,14 @@ func main() {
 
 	userRepo := _userRepo.NewUserRepository(dbConn)
 	locationRepo := _bitsbRepo.NewLocationRepository(dbConn)
-	companyRepo := _bitsbRepo.NewCompanyRepository(dbConn)
 
 	userService := _userService.NewUserService(userRepo, jwtInstance, timeout)
 	locationService := _bitsbService.NewLocationService(locationRepo)
-	companyService := _bitsbService.NewCompanyService(companyRepo)
 
 	jwtMiddleware := middl.JWTAuth(jwtInstance, userRepo)
 
 	_userRouter.RegisterRoutes(r, userService, jwtMiddleware)
 	_bitsbRouter.RegisterLocationRoutes(r, locationService, jwtMiddleware)
-	_bitsbRouter.RegisterCompanyRoutes(r, companyService, jwtMiddleware)
 
 	if viper.GetBool("SERVER_DEBUG") {
 		r.Mount("/debug", middleware.Profiler())

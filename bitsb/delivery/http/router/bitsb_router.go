@@ -30,24 +30,3 @@ func RegisterLocationRoutes(
 		})
 	})
 }
-
-func RegisterCompanyRoutes(
-	router *chi.Mux,
-	service domain.CompanyServiceProvider,
-	jwtMiddleware func(next http.Handler) http.Handler,
-) {
-	h := locationHandler.NewCompanyHandler(service)
-
-	router.Group(func(r chi.Router) {
-		r.Use(jwtMiddleware)
-		r.Route("/companies", func(r chi.Router) {
-			r.Get("/", h.ListAll)
-			r.With(middleware.AccessAbove(domain.Admin)).Post("/", h.Create)
-		})
-		r.Route("/company", func(r chi.Router) {
-			r.Get("/{id}", h.GetByID)
-			r.With(middleware.AccessAbove(domain.Admin)).Patch("/{id}", h.Update)
-			r.With(middleware.AccessAbove(domain.Admin)).Delete("/{id}", h.Delete)
-		})
-	})
-}
