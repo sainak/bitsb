@@ -134,3 +134,13 @@ func (b *BusRouteForm) UnmarshalJSON(data []byte) error {
 	b.EndTime, _ = time.Parse("15:04", aux.EndTime)
 	return nil
 }
+
+type (
+	BusRouteStorer interface {
+		Insert(ctx context.Context, busRoute *BusRoute) (err error)
+	}
+
+	BusRouteServiceProvider interface {
+		Create(ctx context.Context, busRoute *BusRoute) (err error)
+	}
+)
