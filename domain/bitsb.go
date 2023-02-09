@@ -138,9 +138,13 @@ func (b *BusRouteForm) UnmarshalJSON(data []byte) error {
 type (
 	BusRouteStorer interface {
 		Insert(ctx context.Context, busRoute *BusRoute) (err error)
+		Update(ctx context.Context, busRoute *BusRoute) (err error)
+		Delete(ctx context.Context, id int64) (err error)
 	}
 
 	BusRouteServiceProvider interface {
 		Create(ctx context.Context, busRoute *BusRoute) (err error)
+		Update(ctx context.Context, busRoute *BusRoute) (err error)
+		Delete(ctx context.Context, id int64) (err error)
 	}
 )

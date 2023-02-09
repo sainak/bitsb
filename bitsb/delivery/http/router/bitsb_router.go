@@ -40,5 +40,9 @@ func RegisterBusRouteRoutes(
 	router.Group(func(r chi.Router) {
 		r.Use(jwtMiddleware)
 		r.With(middleware.AccessAbove(domain.Admin)).Post("/bus-routes", h.Create)
+		r.Route("/bus-route", func(r chi.Router) {
+			r.With(middleware.AccessAbove(domain.Admin)).Patch("/{id}", h.Update)
+			r.With(middleware.AccessAbove(domain.Admin)).Delete("/{id}", h.Delete)
+		})
 	})
 }
