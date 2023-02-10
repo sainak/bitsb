@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/sirupsen/logrus"
 
 	"github.com/sainak/bitsb/domain"
 	"github.com/sainak/bitsb/domain/errors"
+	"github.com/sainak/bitsb/utils/repo"
 )
 
 type BusRouteRepository struct {
@@ -17,6 +19,85 @@ type BusRouteRepository struct {
 
 func NewBusRouteRepository(conn *sql.DB) domain.BusRouteStorer {
 	return &BusRouteRepository{conn}
+}
+
+func (b *BusRouteRepository) SelectAll(
+	ctx context.Context,
+	cursor string,
+	limit int64,
+	locations []int64,
+) (busRoutes []*domain.BusRoute, nextCursor string, err error) {
+	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes 
+				WHERE created_at < $1 ORDER BY created_at DESC LIMIT $2;`
+	//`WHERE location_ids @> $3::int[] AND created_at < $1 ORDER BY created_at DESC LIMIT $2;`
+
+	queryWithStops := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes
+    						WHERE location_ids @> cast($3 as int[]) AND created_at < $1 ORDER BY created_at DESC LIMIT $2;`
+
+	decodedCursor, err := repo.DecodeCursor(cursor)
+	if err != nil {
+		err = errors.ErrBadCursor
+		return
+	}
+
+	var rows *sql.Rows
+	if len(locations) == 0 {
+		rows, err = b.Conn.QueryContext(ctx, query, decodedCursor, limit)
+	} else {
+		rows, err = b.Conn.QueryContext(ctx, queryWithStops, decodedCursor, limit, pq.Array(locations))
+	}
+
+	if err != nil {
+		return
+	}
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			logrus.Error(err)
+		}
+	}(rows)
+
+	busRoutes = make([]*domain.BusRoute, 0, limit)
+	for rows.Next() {
+		busRoute := domain.BusRoute{}
+		err = rows.Scan(
+			&busRoute.ID,
+			&busRoute.Name,
+			&busRoute.Number,
+			&busRoute.StartTime,
+			&busRoute.EndTime,
+			&busRoute.Interval,
+			pq.Array(&busRoute.LocationIDS),
+			&busRoute.CreatedAt,
+			&busRoute.UpdatedAt,
+		)
+		if err != nil {
+			return
+		}
+		busRoutes = append(busRoutes, &busRoute)
+	}
+
+	if len(busRoutes) > 0 {
+		nextCursor = repo.EncodeCursor(busRoutes[len(busRoutes)-1].CreatedAt)
+	}
+	return
+}
+
+func (b *BusRouteRepository) SelectByID(ctx context.Context, id int64) (busRoute *domain.BusRoute, err error) {
+	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes WHERE id=$1;`
+	busRoute = &domain.BusRoute{}
+	err = b.Conn.QueryRowContext(ctx, query, id).Scan(
+		&busRoute.ID,
+		&busRoute.Name,
+		&busRoute.Number,
+		&busRoute.StartTime,
+		&busRoute.EndTime,
+		&busRoute.Interval,
+		pq.Array(&busRoute.LocationIDS),
+		&busRoute.CreatedAt,
+		&busRoute.UpdatedAt,
+	)
+	return
 }
 
 func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *domain.BusRoute) (err error) {

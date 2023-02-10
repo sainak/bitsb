@@ -18,30 +18,37 @@ func NewBusRouteService(r domain.BusRouteStorer, l domain.LocationStorer) domain
 	}
 }
 
-func (b *BusRouteService) Create(ctx context.Context, busRoute *domain.BusRoute) (err error) {
-	err = b.repo.Insert(ctx, busRoute)
+func (b *BusRouteService) ListAll(
+	ctx context.Context,
+	cursor string,
+	limit int64,
+	locations []int64,
+) (busRoutes []*domain.BusRoute, nextCursor string, err error) {
+	return b.repo.SelectAll(ctx, cursor, limit, locations)
+}
+
+func (b *BusRouteService) GetByID(ctx context.Context, id int64) (busRoute *domain.BusRoute, err error) {
+	busRoute, err = b.repo.SelectByID(ctx, id)
 	if err != nil {
-		return err
+		return
 	}
 	locations, err := b.locationRepo.SelectByIDArray(ctx, busRoute.LocationIDS)
 	if err != nil {
 		return
 	}
-	busRoute.Locations = locations
+	for _, l := range locations {
+		loc := &domain.LocationForm{Name: l.Name}
+		busRoute.Locations = append(busRoute.Locations, loc)
+	}
 	return
 }
 
+func (b *BusRouteService) Create(ctx context.Context, busRoute *domain.BusRoute) (err error) {
+	return b.repo.Insert(ctx, busRoute)
+}
+
 func (b *BusRouteService) Update(ctx context.Context, busRoute *domain.BusRoute) (err error) {
-	err = b.repo.Update(ctx, busRoute)
-	if err != nil {
-		return err
-	}
-	locations, err := b.locationRepo.SelectByIDArray(ctx, busRoute.LocationIDS)
-	if err != nil {
-		return
-	}
-	busRoute.Locations = locations
-	return
+	return b.repo.Update(ctx, busRoute)
 }
 
 func (b *BusRouteService) Delete(ctx context.Context, id int64) (err error) {

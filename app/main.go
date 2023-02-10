@@ -111,8 +111,14 @@ func main() {
 
 	r := chi.NewRouter()
 
-	r.Use(middleware.CleanPath)
-	r.Use(middleware.StripSlashes)
+	r.Use(
+		middleware.Maybe(middleware.CleanPath, func(r *http.Request) bool {
+			return !strings.HasPrefix(r.URL.Path, "/debug/")
+		}),
+		middleware.Maybe(middleware.StripSlashes, func(r *http.Request) bool {
+			return !strings.HasPrefix(r.URL.Path, "/debug/")
+		}),
+	)
 	r.Use(middleware.URLFormat)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
