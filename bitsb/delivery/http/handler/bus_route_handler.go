@@ -135,3 +135,32 @@ func (h *BusRouteHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 	render.NoContent(w, r)
 }
+
+func (h *BusRouteHandler) TicketPrice(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+	if err != nil {
+		response.RespondForError(w, r, err)
+		return
+	}
+	start, err := strconv.ParseInt(r.URL.Query().Get("start"), 10, 64)
+	if err != nil {
+		response.RespondForError(w, r, err)
+		return
+	}
+	end, err := strconv.ParseInt(r.URL.Query().Get("end"), 10, 64)
+	if err != nil {
+		response.RespondForError(w, r, err)
+		return
+	}
+
+	ticketPrice, err := h.service.CalculateTicketPrice(r.Context(), id, start, end)
+	if err != nil {
+		response.RespondForError(w, r, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, render.M{
+		"ticket_price": ticketPrice,
+	})
+}

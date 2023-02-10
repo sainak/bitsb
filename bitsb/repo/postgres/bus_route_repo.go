@@ -27,9 +27,8 @@ func (b *BusRouteRepository) SelectAll(
 	limit int64,
 	locations []int64,
 ) (busRoutes []*domain.BusRoute, nextCursor string, err error) {
-	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes 
+	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at  FROM bus_routes 
 				WHERE created_at < $1 ORDER BY created_at DESC LIMIT $2;`
-	//`WHERE location_ids @> $3::int[] AND created_at < $1 ORDER BY created_at DESC LIMIT $2;`
 
 	queryWithStops := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes
     						WHERE location_ids @> cast($3 as int[]) AND created_at < $1 ORDER BY created_at DESC LIMIT $2;`
@@ -68,6 +67,8 @@ func (b *BusRouteRepository) SelectAll(
 			&busRoute.EndTime,
 			&busRoute.Interval,
 			pq.Array(&busRoute.LocationIDS),
+			&busRoute.MinPrice,
+			&busRoute.MaxPrice,
 			&busRoute.CreatedAt,
 			&busRoute.UpdatedAt,
 		)
@@ -84,7 +85,7 @@ func (b *BusRouteRepository) SelectAll(
 }
 
 func (b *BusRouteRepository) SelectByID(ctx context.Context, id int64) (busRoute *domain.BusRoute, err error) {
-	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes WHERE id=$1;`
+	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at FROM bus_routes WHERE id=$1;`
 	busRoute = &domain.BusRoute{}
 	err = b.Conn.QueryRowContext(ctx, query, id).Scan(
 		&busRoute.ID,
@@ -94,6 +95,8 @@ func (b *BusRouteRepository) SelectByID(ctx context.Context, id int64) (busRoute
 		&busRoute.EndTime,
 		&busRoute.Interval,
 		pq.Array(&busRoute.LocationIDS),
+		&busRoute.MinPrice,
+		&busRoute.MaxPrice,
 		&busRoute.CreatedAt,
 		&busRoute.UpdatedAt,
 	)
@@ -101,7 +104,7 @@ func (b *BusRouteRepository) SelectByID(ctx context.Context, id int64) (busRoute
 }
 
 func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *domain.BusRoute) (err error) {
-	query := `INSERT INTO bus_routes (name, number, start_time, end_time, interval, location_ids, created_at, updated_at)
+	query := `INSERT INTO bus_routes (name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at)
     	VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
 
 	currentTime := time.Now()
@@ -117,6 +120,8 @@ func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *domain.BusRou
 		busRoute.EndTime,
 		busRoute.Interval,
 		pq.Array(busRoute.LocationIDS),
+		busRoute.MinPrice,
+		busRoute.MaxPrice,
 		busRoute.CreatedAt,
 		busRoute.UpdatedAt,
 	).Scan(&busRoute.ID)
@@ -125,7 +130,7 @@ func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *domain.BusRou
 func (b *BusRouteRepository) Update(ctx context.Context, busRoute *domain.BusRoute) (err error) {
 
 	query := `UPDATE bus_routes 
-				SET name=$2, number=$3, start_time=$4, end_time=$5, interval=$6, location_ids=$7, updated_at=$8
+				SET name=$2, number=$3, start_time=$4, end_time=$5, interval=$6, location_ids=$7, min_price=$8, max_price=$9, updated_at=$10
 				WHERE id=$1`
 
 	busRoute.UpdatedAt = time.Now()
@@ -140,6 +145,8 @@ func (b *BusRouteRepository) Update(ctx context.Context, busRoute *domain.BusRou
 		busRoute.EndTime,
 		busRoute.Interval,
 		pq.Array(busRoute.LocationIDS),
+		busRoute.MinPrice,
+		busRoute.MaxPrice,
 		busRoute.UpdatedAt,
 	)
 	if err != nil {

@@ -1,0 +1,3 @@
+ALTER TABLE bus_routes
+ADD min_price INT NOT NULL DEFAULT 5,
+ADD max_price INT NOT NULL DEFAULT 25;

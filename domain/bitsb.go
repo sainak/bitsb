@@ -59,6 +59,8 @@ type BusRoute struct {
 	EndTime     time.Time       `json:"end_time" db:"end_time"`
 	Interval    int64           `json:"interval" db:"interval"`
 	LocationIDS []int64         `json:"location_ids" db:"locations"`
+	MinPrice    int64           `json:"min_price"`
+	MaxPrice    int64           `json:"max_price"`
 	CreatedAt   time.Time       `json:"created_at" db:"createdAt"`
 	UpdatedAt   time.Time       `json:"updated_at" db:"updatedAt"`
 	Locations   []*LocationForm `json:"stops,omitempty"`
@@ -85,6 +87,8 @@ type BusRouteForm struct {
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
 	Interval    int64     `json:"interval"`
+	MinPrice    int64     `json:"min_price"`
+	MaxPrice    int64     `json:"max_price"`
 	LocationIDS []int64   `json:"location_ids"`
 }
 
@@ -147,6 +151,7 @@ type (
 	BusRouteServiceProvider interface {
 		ListAll(ctx context.Context, cursor string, limit int64, locations []int64) (busRoutes []*BusRoute, nextCursor string, err error)
 		GetByID(ctx context.Context, id int64) (busRoute *BusRoute, err error)
+		CalculateTicketPrice(ctx context.Context, id, start, end int64) (price int64, err error)
 		Create(ctx context.Context, busRoute *BusRoute) (err error)
 		Update(ctx context.Context, busRoute *BusRoute) (err error)
 		Delete(ctx context.Context, id int64) (err error)

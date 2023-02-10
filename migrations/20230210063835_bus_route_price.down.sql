@@ -1,0 +1,3 @@
+ALTER TABLE bus_routes
+DROP COLUMN IF EXISTS min_price,
+DROP COLUMN IF EXISTS max_price;
