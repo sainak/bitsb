@@ -128,7 +128,6 @@ func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *domain.BusRou
 }
 
 func (b *BusRouteRepository) Update(ctx context.Context, busRoute *domain.BusRoute) (err error) {
-
 	query := `UPDATE bus_routes 
 				SET name=$2, number=$3, start_time=$4, end_time=$5, interval=$6, location_ids=$7, min_price=$8, max_price=$9, updated_at=$10
 				WHERE id=$1`

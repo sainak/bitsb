@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -93,31 +94,32 @@ type BusRouteForm struct {
 }
 
 func (b *BusRouteForm) Bind(r *http.Request) error {
-	var errors []string
+	const MaxStops = 10
+	var errs []string
 	if b.Name == "" {
-		errors = append(errors, "'name' is required")
+		errs = append(errs, "'name' is required")
 	}
 	if b.Number == "" {
-		errors = append(errors, "'number' is required")
+		errs = append(errs, "'number' is required")
 	}
 	if b.StartTime.IsZero() {
-		errors = append(errors, "'start_time' is required")
+		errs = append(errs, "'start_time' is required")
 	}
 	if b.EndTime.IsZero() {
-		errors = append(errors, "'end_time' is required")
+		errs = append(errs, "'end_time' is required")
 	}
 	if b.Interval == 0 {
-		errors = append(errors, "'interval' is required")
+		errs = append(errs, "'interval' is required")
 	}
 	if len(b.LocationIDS) == 0 {
-		errors = append(errors, "'location_ids' is required")
+		errs = append(errs, "'location_ids' is required")
 	} else if len(b.LocationIDS) < 2 {
-		errors = append(errors, "'location_ids' should have atleast 2 stops")
-	} else if len(b.LocationIDS) > 10 {
-		errors = append(errors, "'location_ids' should have atmost 10 stops")
+		errs = append(errs, "'location_ids' should have atleast 2 stops")
+	} else if len(b.LocationIDS) > MaxStops {
+		errs = append(errs, fmt.Sprintf("'location_ids' should have atmost %d stops", MaxStops))
 	}
-	if len(errors) > 0 {
-		return fmt.Errorf(strings.Join(errors, ", "))
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, ", "))
 	}
 	return nil
 }
