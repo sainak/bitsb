@@ -6,4 +6,5 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrBadCursor          = errors.New("bad cursor")
 	ErrNotFound           = errors.New("not found")
+	ErrInvalidLocation    = errors.New("invalid location")
 )

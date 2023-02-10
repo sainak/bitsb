@@ -97,6 +97,29 @@ func (_m *LocationStorer) SelectByID(ctx context.Context, id int64) (*domain.Loc
 	return r0, r1
 }
 
+// SelectByIDArray provides a mock function with given fields: ctx, ids
+func (_m *LocationStorer) SelectByIDArray(ctx context.Context, ids []int64) ([]*domain.Location, error) {
+	ret := _m.Called(ctx, ids)
+
+	var r0 []*domain.Location
+	if rf, ok := ret.Get(0).(func(context.Context, []int64) []*domain.Location); ok {
+		r0 = rf(ctx, ids)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*domain.Location)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, []int64) error); ok {
+		r1 = rf(ctx, ids)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: ctx, location
 func (_m *LocationStorer) Update(ctx context.Context, location *domain.Location) error {
 	ret := _m.Called(ctx, location)
