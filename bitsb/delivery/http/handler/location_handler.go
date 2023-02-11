@@ -9,8 +9,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/utils/repo"
-	"github.com/sainak/bitsb/utils/response"
+	"github.com/sainak/bitsb/domain/api"
+	"github.com/sainak/bitsb/pkg/handler"
+	"github.com/sainak/bitsb/pkg/repo"
 )
 
 type LocationHandler struct {
@@ -26,7 +27,7 @@ func NewLocationHandler(service domain.LocationServiceProvider) *LocationHandler
 func (l *LocationHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	cursor := r.URL.Query().Get("cursor")
-	limit := getLimit(r)
+	limit := handler.GetLimit(r)
 
 	logrus.Print("query: ", query)
 
@@ -36,10 +37,8 @@ func (l *LocationHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	locations, nextCursor, err := l.service.ListAll(r.Context(), cursor, limit, filters)
-
 	if err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -50,13 +49,13 @@ func (l *LocationHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 func (l *LocationHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
+
 	location, err := l.service.GetByID(r.Context(), id)
 	if err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -66,7 +65,7 @@ func (l *LocationHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 func (l *LocationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	data := &domain.LocationForm{}
 	if err := render.Bind(r, data); err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -75,8 +74,7 @@ func (l *LocationHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := l.service.Create(r.Context(), location); err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -86,12 +84,13 @@ func (l *LocationHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (l *LocationHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
+
 	data := &domain.LocationForm{}
 	if err = render.Bind(r, data); err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -101,8 +100,7 @@ func (l *LocationHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err = l.service.Update(r.Context(), location); err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -112,13 +110,12 @@ func (l *LocationHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (l *LocationHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 
 	if err = l.service.Delete(r.Context(), id); err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 

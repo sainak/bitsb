@@ -85,11 +85,15 @@ TESTS_ARGS += -test.failfast
 TESTS_ARGS += -test.parallel $(shell nproc)
 TESTS_ARGS += -test.count 1
 TESTS_ARGS += -test.timeout 5s
-TESTS_ARGS += -test.coverprofile coverage.out
+TESTS_ARGS += -coverpkg ./...
+TESTS_ARGS += -covermode=atomic
+TESTS_ARGS += -coverprofile coverage.out
 TESTS_ARGS += -race
 
 run-tests: $(GOTESTSUM)
 	@ gotestsum $(TESTS_ARGS) -short
+	@ cat coverage.out | grep -v "mocks" > coverage.out.tmp
+	@ mv coverage.out.tmp coverage.out
 
 tests: run-tests $(TPARSE) ## Run Tests & parse details
 	@cat gotestsum.json.out | tparse -all -notests

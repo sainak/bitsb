@@ -56,20 +56,20 @@ func (_m *UserServiceProvider) Login(ctx context.Context, creds *domain.UserLogi
 	return r0, r1
 }
 
-// RefreshToken provides a mock function with given fields: ctx, token
-func (_m *UserServiceProvider) RefreshToken(ctx context.Context, token string) (domain.Token, error) {
-	ret := _m.Called(ctx, token)
+// RefreshToken provides a mock function with given fields: token
+func (_m *UserServiceProvider) RefreshToken(token string) (domain.Token, error) {
+	ret := _m.Called(token)
 
 	var r0 domain.Token
-	if rf, ok := ret.Get(0).(func(context.Context, string) domain.Token); ok {
-		r0 = rf(ctx, token)
+	if rf, ok := ret.Get(0).(func(string) domain.Token); ok {
+		r0 = rf(token)
 	} else {
 		r0 = ret.Get(0).(domain.Token)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, token)
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(token)
 	} else {
 		r1 = ret.Error(1)
 	}
