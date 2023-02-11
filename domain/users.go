@@ -61,16 +61,16 @@ func (r2 RefreshTokenFrom) Bind(r *http.Request) error {
 }
 
 type UserStorer interface {
-	SelectByID(ctx context.Context, id int64) (user User, err error)
-	SelectByEmail(ctx context.Context, email string) (user User, err error)
-	Insert(ctx context.Context, user *User) (err error)
-	Update(ctx context.Context, user *User) (err error)
+	SelectByID(ctx context.Context, id int64) (User, error)
+	SelectByEmail(ctx context.Context, email string) (User, error)
+	Insert(ctx context.Context, user *User) error
+	Update(ctx context.Context, user *User) error
 }
 
 type UserServiceProvider interface {
-	GetByID(ctx context.Context, id int64) (user User, err error)
-	Login(ctx context.Context, creds *UserLoginForm) (token Token, err error)
-	RefreshToken(ctx context.Context, token string) (newToken Token, err error)
-	Signup(ctx context.Context, user *User) (err error)
-	Update(ctx context.Context, user *User) (err error)
+	GetByID(ctx context.Context, id int64) (User, error)
+	Login(ctx context.Context, creds *UserLoginForm) (Token, error)
+	RefreshToken(token string) (Token, error)
+	Signup(ctx context.Context, user *User) error
+	Update(ctx context.Context, user *User) error
 }

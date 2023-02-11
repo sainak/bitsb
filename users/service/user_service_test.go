@@ -14,7 +14,8 @@ import (
 
 	"github.com/sainak/bitsb/domain"
 	"github.com/sainak/bitsb/domain/mocks"
-	"github.com/sainak/bitsb/utils/jwt"
+	"github.com/sainak/bitsb/pkg/jwt"
+	"github.com/sainak/bitsb/pkg/utils"
 )
 
 type UserServiceTestSuite struct {
@@ -31,7 +32,7 @@ func TestUserServiceTestSuite(t *testing.T) {
 func (s *UserServiceTestSuite) SetupTest() {
 	s.repo = mocks.NewUserStorer(s.T())
 	s.jwt = jwt.New("test_secret", "24", "5")
-	s.service = NewUserService(s.repo, s.jwt, 0)
+	s.service = NewUserService(s.repo, s.jwt)
 }
 
 func (s *UserServiceTestSuite) TestLogin() {
@@ -44,14 +45,13 @@ func (s *UserServiceTestSuite) TestLogin() {
 		t.Fatal(err)
 	}
 	defer func(patch *mpatch.Patch) {
-		err := patch.Unpatch()
-		if err != nil {
+		if err := patch.Unpatch(); err != nil {
 			t.Fatal(err)
 		}
 	}(patch)
 
 	password := "test_pass"
-	p, err := hashPassword(password)
+	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,12 +60,13 @@ func (s *UserServiceTestSuite) TestLogin() {
 		FirstName: "Tester",
 		LastName:  "User",
 		Email:     "testuser@email.com",
-		Password:  p,
+		Password:  hashedPassword,
 		Access:    domain.Passenger,
 		LastLogin: null.TimeFrom(time.Now()),
 		CreatedAt: time.Time{},
 		UpdatedAt: time.Time{},
 	}
+
 	t.Run("when login is successful", func(t *testing.T) {
 		s.repo.
 			On("SelectByEmail", mock.Anything, user.Email).

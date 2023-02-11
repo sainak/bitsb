@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sainak/bitsb/utils/repo"
+	"github.com/sainak/bitsb/pkg/repo"
 )
 
 // ---- Location ----
@@ -34,19 +34,19 @@ func (l *LocationForm) Bind(r *http.Request) error {
 
 type (
 	LocationStorer interface {
-		SelectAll(ctx context.Context, cursor string, limit int64, filters repo.Filters) (locations []*Location, nextCursor string, err error)
-		SelectByID(ctx context.Context, id int64) (location *Location, err error)
-		SelectByIDArray(ctx context.Context, ids []int64) (locations []*Location, err error)
-		Insert(ctx context.Context, location *Location) (err error)
-		Update(ctx context.Context, location *Location) (err error)
-		Delete(ctx context.Context, id int64) (err error)
+		SelectAll(ctx context.Context, cursor string, limit int64, filters repo.Filters) ([]*Location, string, error)
+		SelectByID(ctx context.Context, id int64) (*Location, error)
+		SelectByIDArray(ctx context.Context, ids []int64) ([]*Location, error)
+		Insert(ctx context.Context, location *Location) error
+		Update(ctx context.Context, location *Location) error
+		Delete(ctx context.Context, id int64) error
 	}
 	LocationServiceProvider interface {
-		ListAll(ctx context.Context, cursor string, limit int64, filters repo.Filters) (locations []*Location, nextCursor string, err error)
-		GetByID(ctx context.Context, id int64) (location *Location, err error)
-		Create(ctx context.Context, location *Location) (err error)
-		Update(ctx context.Context, location *Location) (err error)
-		Delete(ctx context.Context, id int64) (err error)
+		ListAll(ctx context.Context, cursor string, limit int64, filters repo.Filters) ([]*Location, string, error)
+		GetByID(ctx context.Context, id int64) (*Location, error)
+		Create(ctx context.Context, location *Location) error
+		Update(ctx context.Context, location *Location) error
+		Delete(ctx context.Context, id int64) error
 	}
 )
 
@@ -143,19 +143,19 @@ func (b *BusRouteForm) UnmarshalJSON(data []byte) error {
 
 type (
 	BusRouteStorer interface {
-		SelectAll(ctx context.Context, cursor string, limit int64, locations []int64) (busRoutes []*BusRoute, nextCursor string, err error)
-		SelectByID(ctx context.Context, id int64) (busRoute *BusRoute, err error)
-		Insert(ctx context.Context, busRoute *BusRoute) (err error)
-		Update(ctx context.Context, busRoute *BusRoute) (err error)
-		Delete(ctx context.Context, id int64) (err error)
+		SelectAll(ctx context.Context, cursor string, limit int64, locations []int64) ([]*BusRoute, string, error)
+		SelectByID(ctx context.Context, id int64) (*BusRoute, error)
+		Insert(ctx context.Context, busRoute *BusRoute) error
+		Update(ctx context.Context, busRoute *BusRoute) error
+		Delete(ctx context.Context, id int64) error
 	}
 
 	BusRouteServiceProvider interface {
-		ListAll(ctx context.Context, cursor string, limit int64, locations []int64) (busRoutes []*BusRoute, nextCursor string, err error)
-		GetByID(ctx context.Context, id int64) (busRoute *BusRoute, err error)
-		CalculateTicketPrice(ctx context.Context, id, start, end int64) (price int64, err error)
-		Create(ctx context.Context, busRoute *BusRoute) (err error)
-		Update(ctx context.Context, busRoute *BusRoute) (err error)
-		Delete(ctx context.Context, id int64) (err error)
+		ListAll(ctx context.Context, cursor string, limit int64, locations []int64) ([]*BusRoute, string, error)
+		GetByID(ctx context.Context, id int64) (*BusRoute, error)
+		CalculateTicketPrice(ctx context.Context, id, start, end int64) (int64, error)
+		Create(ctx context.Context, busRoute *BusRoute) error
+		Update(ctx context.Context, busRoute *BusRoute) error
+		Delete(ctx context.Context, id int64) error
 	}
 )

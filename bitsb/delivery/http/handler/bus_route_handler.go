@@ -9,8 +9,13 @@ import (
 	"github.com/go-chi/render"
 
 	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/utils/response"
+	"github.com/sainak/bitsb/domain/api"
+	"github.com/sainak/bitsb/pkg/handler"
 )
+
+type TicketPriceResponse struct {
+	TicketPrice float64 `json:"ticket_price"`
+}
 
 type BusRouteHandler struct {
 	service domain.BusRouteServiceProvider
@@ -24,9 +29,10 @@ func NewBusRouteHandler(service domain.BusRouteServiceProvider) *BusRouteHandler
 
 func (h *BusRouteHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 	cursor := r.URL.Query().Get("cursor")
-	limit := getLimit(r)
+	limit := handler.GetLimit(r)
 
 	l := r.URL.Query().Get("locations")
+	// convert csv string of locations to int64 array
 	var locations []int64
 	if l != "" {
 		lA := strings.Split(l, ",")
@@ -38,8 +44,7 @@ func (h *BusRouteHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 
 	busRoutes, nextCursor, err := h.service.ListAll(r.Context(), cursor, limit, locations)
 	if err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -50,13 +55,12 @@ func (h *BusRouteHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 func (h *BusRouteHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 	busRoute, err := h.service.GetByID(r.Context(), id)
 	if err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 	render.JSON(w, r, busRoute)
@@ -66,7 +70,7 @@ func (h *BusRouteHandler) Create(w http.ResponseWriter, r *http.Request) {
 	data := &domain.BusRouteForm{}
 	err := render.Bind(r, data)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -79,10 +83,8 @@ func (h *BusRouteHandler) Create(w http.ResponseWriter, r *http.Request) {
 		LocationIDS: data.LocationIDS,
 	}
 
-	err = h.service.Create(r.Context(), busRoute)
-	if err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+	if err = h.service.Create(r.Context(), busRoute); err != nil {
+		api.RespondForError(w, r, err)
 		return
 	}
 	render.JSON(w, r, busRoute)
@@ -91,13 +93,13 @@ func (h *BusRouteHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *BusRouteHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 	data := &domain.BusRouteForm{}
 	err = render.Bind(r, data)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 
@@ -111,10 +113,8 @@ func (h *BusRouteHandler) Update(w http.ResponseWriter, r *http.Request) {
 		LocationIDS: data.LocationIDS,
 	}
 
-	err = h.service.Update(r.Context(), busRoute)
-	if err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+	if err = h.service.Update(r.Context(), busRoute); err != nil {
+		api.RespondForError(w, r, err)
 		return
 	}
 	render.JSON(w, r, busRoute)
@@ -123,13 +123,13 @@ func (h *BusRouteHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *BusRouteHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 
 	err = h.service.Delete(r.Context(), id)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -139,24 +139,23 @@ func (h *BusRouteHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *BusRouteHandler) TicketPrice(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 	start, err := strconv.ParseInt(r.URL.Query().Get("start"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 	end, err := strconv.ParseInt(r.URL.Query().Get("end"), 10, 64)
 	if err != nil {
-		response.RespondForError(w, r, err)
+		api.RespondForError(w, r, err)
 		return
 	}
 
 	ticketPrice, err := h.service.CalculateTicketPrice(r.Context(), id, start, end)
 	if err != nil {
-		response.RespondForError(w, r, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		api.RespondForError(w, r, err)
 		return
 	}
 

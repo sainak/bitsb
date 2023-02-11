@@ -7,5 +7,6 @@ import (
 )
 
 func RegisterRoutes(router *chi.Mux) {
+	router.Get("/", handler.Home)
 	router.Get("/ping", handler.Ping)
 }

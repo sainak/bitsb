@@ -8,7 +8,7 @@ import (
 	"github.com/sainak/bitsb/domain"
 )
 
-// AccessAbove is a middleware that checks if the user has access level above the given level
+// AccessAbove checks if the user has access level above the given level
 func AccessAbove(level domain.AccessLevel) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -19,6 +19,7 @@ func AccessAbove(level domain.AccessLevel) func(next http.Handler) http.Handler 
 				render.JSON(w, r, render.M{"message": "user not found in context"})
 				return
 			}
+
 			if user.Access < level {
 				w.WriteHeader(http.StatusForbidden)
 				render.JSON(w, r, render.M{"message": "you don't have permission to perform this action"})

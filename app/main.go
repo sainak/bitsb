@@ -17,12 +17,12 @@ import (
 	_bitsbRouter "github.com/sainak/bitsb/bitsb/delivery/http/router"
 	_bitsbRepo "github.com/sainak/bitsb/bitsb/repo/postgres"
 	_bitsbService "github.com/sainak/bitsb/bitsb/service"
+	middl "github.com/sainak/bitsb/domain/middleware"
+	"github.com/sainak/bitsb/pkg/jwt"
 	_rootRouter "github.com/sainak/bitsb/root/delivery/http/router"
 	_userRouter "github.com/sainak/bitsb/users/delivery/http/router"
 	_userRepo "github.com/sainak/bitsb/users/repo/postgres"
 	_userService "github.com/sainak/bitsb/users/service"
-	"github.com/sainak/bitsb/utils/jwt"
-	middl "github.com/sainak/bitsb/utils/middleware"
 )
 
 var (
@@ -36,8 +36,7 @@ func init() {
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 
-	err := viper.ReadInConfig()
-	if err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		logrus.Print(err)
 	}
 
@@ -55,13 +54,15 @@ func init() {
 	}
 
 	if viper.GetBool("SERVER_DEBUG") {
-		logrus.Println("SERVER running in debug mode")
+		logrus.Info("SERVER running in debug mode")
+		logrus.SetLevel(logrus.DebugLevel)
 	}
 }
 
 func main() {
-	logrus.Println("Version: ", version)
+	logrus.Debugf("Version: %s", version)
 
+	var sentryMiddleware *sentryhttp.Handler
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              viper.GetString("SENTRY_DSN"),
 		AttachStacktrace: true,
@@ -69,39 +70,37 @@ func main() {
 		TracesSampleRate: 1.0,
 		SendDefaultPII:   true,
 		ServerName:       "bitsb",
-		Release:          "bitsb@" + version, //-ldflags='-X main.release=VALUE'
+		Release:          "bitsb@" + version,
 		Dist:             "",
 		Environment:      environment,
 	})
 	if err != nil {
 		logrus.Errorf("sentry.Init: %s", err)
-	}
-	// Flush buffered events before the program terminates.
-	defer sentry.Flush(2 * time.Second)
+	} else {
+		// Flush buffered events before the program terminates.
+		defer sentry.Flush(2 * time.Second)
 
-	sentryMiddleware := sentryhttp.New(sentryhttp.Options{
-		Repanic: true,
-	})
+		sentryMiddleware = sentryhttp.New(sentryhttp.Options{
+			Repanic: true,
+		})
+	}
 
 	dsn := viper.GetString("DB_DSN")
-	logrus.Info("DB_DSN: ", dsn)
-	dbConn, err := sql.Open(`postgres`, dsn)
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	err = dbConn.Ping()
-	if err != nil {
-		logrus.Fatal(err)
-	}
+	logrus.Debug("DB_DSN: ", dsn)
 
+	dbConn, err := sql.Open("postgres", dsn)
+	if err != nil {
+		logrus.Fatal(err)
+	}
 	defer func() {
-		err := dbConn.Close()
-		if err != nil {
+		if err := dbConn.Close(); err != nil {
 			logrus.Fatal(err)
 		}
 	}()
 
-	timeout := time.Duration(viper.GetInt("SERVER_TIMEOUT")) * time.Second
+	if err = dbConn.Ping(); err != nil {
+		logrus.Fatal(err)
+	}
 
 	jwtInstance := jwt.New(
 		viper.GetString("JWT_SECRET"),
@@ -110,7 +109,6 @@ func main() {
 	)
 
 	r := chi.NewRouter()
-
 	r.Use(
 		middleware.Maybe(middleware.CleanPath, func(r *http.Request) bool {
 			return !strings.HasPrefix(r.URL.Path, "/debug/")
@@ -124,24 +122,28 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	// Important: Chi has a middleware stack and thus it is important to put the
-	// Sentry handler on the appropriate place. If using middleware.Recoverer,
-	// the Sentry middleware must come afterwards (and configure it with
-	// Repanic: true).
-	r.Use(sentryMiddleware.Handle)
 
-	_rootRouter.RegisterRoutes(r)
+	if sentryMiddleware != nil {
+		// Important: Chi has a middleware stack and thus it is important to put the
+		// Sentry handler on the appropriate place. If using middleware.Recoverer,
+		// the Sentry middleware must come afterwards (and configure it with
+		// Repanic: true).
+		r.Use(sentryMiddleware.Handle)
+	}
 
+	// Init dependencies
 	userRepo := _userRepo.NewUserRepository(dbConn)
 	locationRepo := _bitsbRepo.NewLocationRepository(dbConn)
 	busRouteRepo := _bitsbRepo.NewBusRouteRepository(dbConn)
 
-	userService := _userService.NewUserService(userRepo, jwtInstance, timeout)
+	userService := _userService.NewUserService(userRepo, jwtInstance)
 	locationService := _bitsbService.NewLocationService(locationRepo)
 	busRouteService := _bitsbService.NewBusRouteService(busRouteRepo, locationRepo)
 
 	jwtMiddleware := middl.JWTAuth(jwtInstance, userRepo)
 
+	// Register routes
+	_rootRouter.RegisterRoutes(r)
 	_userRouter.RegisterRoutes(r, userService, jwtMiddleware)
 	_bitsbRouter.RegisterLocationRoutes(r, locationService, jwtMiddleware)
 	_bitsbRouter.RegisterBusRouteRoutes(r, busRouteService, jwtMiddleware)
@@ -153,11 +155,9 @@ func main() {
 	server := &http.Server{
 		Addr:              ":" + viper.GetString("WEBSITE_PORT"),
 		Handler:           r,
-		ReadHeaderTimeout: timeout,
+		ReadHeaderTimeout: time.Duration(viper.GetInt("SERVER_TIMEOUT")) * time.Second,
 	}
-	logrus.Println("Listening on: http://0.0.0.0" + server.Addr)
-	err = server.ListenAndServe()
-	if err != nil {
-		logrus.Println(err)
-	}
+
+	logrus.Info("Listening on: http://0.0.0.0" + server.Addr)
+	logrus.Fatal(server.ListenAndServe())
 }

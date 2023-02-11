@@ -61,7 +61,6 @@ linters:
   enable:
     - asciicheck
     - bodyclose
-    # - deadcode
     - depguard
     - dogsled
     - dupl
@@ -81,11 +80,10 @@ linters:
     - ineffassign
     - lll
     - misspell
-    # - nakedret
+    - nakedret
     - noctx
     # - nolintlint
     - staticcheck
-    # - structcheck
     - stylecheck
     - typecheck
     - unconvert

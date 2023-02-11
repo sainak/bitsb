@@ -10,11 +10,11 @@ import (
 
 	"github.com/sainak/bitsb/domain"
 	"github.com/sainak/bitsb/domain/errors"
-	"github.com/sainak/bitsb/utils/repo"
+	"github.com/sainak/bitsb/pkg/repo"
 )
 
 type LocationRepository struct {
-	Conn *sql.DB
+	conn *sql.DB
 }
 
 func NewLocationRepository(conn *sql.DB) domain.LocationStorer {
@@ -26,7 +26,7 @@ func (l LocationRepository) SelectAll(
 	cursor string,
 	limit int64,
 	filters repo.Filters,
-) (locations []*domain.Location, nextCursor string, err error) {
+) ([]*domain.Location, string, error) {
 	q := filters.BuildQuery()
 	query := `SELECT id, name, created_at, updated_at 
 				FROM locations 
@@ -36,16 +36,16 @@ func (l LocationRepository) SelectAll(
 	}
 	query += ` ORDER BY created_at DESC  LIMIT $2;`
 
-	locations = make([]*domain.Location, 0, limit)
+	locations := make([]*domain.Location, 0, limit)
 	decodedCursor, err := repo.DecodeCursor(cursor)
 	if err != nil {
 		err = errors.ErrBadCursor
-		return
+		return locations, "", err
 	}
 
-	rows, err := l.Conn.QueryContext(ctx, query, decodedCursor, limit)
+	rows, err := l.conn.QueryContext(ctx, query, decodedCursor, limit)
 	if err != nil {
-		return
+		return locations, "", err
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -63,38 +63,36 @@ func (l LocationRepository) SelectAll(
 			&location.UpdatedAt,
 		)
 		if err != nil {
-			return
+			return locations, "", err
 		}
 		locations = append(locations, &location)
 	}
 
+	var nextCursor string
 	if len(locations) == int(limit) {
 		nextCursor = repo.EncodeCursor(locations[len(locations)-1].CreatedAt)
 	}
 
-	return
+	return locations, nextCursor, nil
 }
 
-func (l LocationRepository) SelectByID(ctx context.Context, id int64) (location *domain.Location, err error) {
+func (l LocationRepository) SelectByID(ctx context.Context, id int64) (*domain.Location, error) {
 	query := `SELECT id, name, created_at, updated_at 
 				FROM locations 
 				WHERE id = $1;`
 
-	row := l.Conn.QueryRowContext(ctx, query, id)
-	location = &domain.Location{}
-	err = row.Scan(
+	row := l.conn.QueryRowContext(ctx, query, id)
+	location := &domain.Location{}
+	err := row.Scan(
 		&location.ID,
 		&location.Name,
 		&location.CreatedAt,
 		&location.UpdatedAt,
 	)
-	if err != nil {
-		return
-	}
-	return
+	return location, err
 }
 
-func (l LocationRepository) SelectByIDArray(ctx context.Context, ids []int64) (locations []*domain.Location, err error) {
+func (l LocationRepository) SelectByIDArray(ctx context.Context, ids []int64) ([]*domain.Location, error) {
 	query := `
 		WITH location_order AS (
 			SELECT id, row_number() OVER (ORDER BY position) AS order_position
@@ -106,10 +104,10 @@ func (l LocationRepository) SelectByIDArray(ctx context.Context, ids []int64) (l
 				ON locations.id = location_order.id
 		ORDER BY location_order.order_position, locations.id
 	`
-	locations = make([]*domain.Location, 0, len(ids))
-	rows, err := l.Conn.QueryContext(ctx, query, pq.Array(ids))
+	locations := make([]*domain.Location, 0, len(ids))
+	rows, err := l.conn.QueryContext(ctx, query, pq.Array(ids))
 	if err != nil {
-		return
+		return locations, err
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -127,11 +125,11 @@ func (l LocationRepository) SelectByIDArray(ctx context.Context, ids []int64) (l
 			&location.UpdatedAt,
 		)
 		if err != nil {
-			return
+			return locations, err
 		}
 		locations = append(locations, &location)
 	}
-	return
+	return locations, nil
 }
 
 func (l LocationRepository) Insert(ctx context.Context, location *domain.Location) error {
@@ -141,7 +139,7 @@ func (l LocationRepository) Insert(ctx context.Context, location *domain.Locatio
 	location.CreatedAt = currentTime
 	location.UpdatedAt = currentTime
 
-	return l.Conn.QueryRowContext(
+	return l.conn.QueryRowContext(
 		ctx,
 		query,
 		location.Name,
@@ -150,28 +148,28 @@ func (l LocationRepository) Insert(ctx context.Context, location *domain.Locatio
 	).Scan(&location.ID)
 }
 
-func (l LocationRepository) Update(ctx context.Context, location *domain.Location) (err error) {
+func (l LocationRepository) Update(ctx context.Context, location *domain.Location) error {
 	query := `UPDATE locations SET name = $2, updated_at = $3 WHERE id = $1;`
 
-	res, err := l.Conn.ExecContext(ctx, query, location.ID, location.Name, location.UpdatedAt)
+	res, err := l.conn.ExecContext(ctx, query, location.ID, location.Name, location.UpdatedAt)
 	if err != nil {
-		return
+		return err
 	}
 	if rowsAffected, _ := res.RowsAffected(); rowsAffected == 0 {
 		err = errors.ErrNotFound
 	}
-	return
+	return err
 }
 
-func (l LocationRepository) Delete(ctx context.Context, id int64) (err error) {
+func (l LocationRepository) Delete(ctx context.Context, id int64) error {
 	query := `DELETE FROM locations WHERE id = $1;`
 
-	res, err := l.Conn.ExecContext(ctx, query, id)
+	res, err := l.conn.ExecContext(ctx, query, id)
 	if err != nil {
-		return
+		return err
 	}
 	if rowsAffected, _ := res.RowsAffected(); rowsAffected == 0 {
 		err = errors.ErrNotFound
 	}
-	return
+	return err
 }

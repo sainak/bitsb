@@ -7,7 +7,7 @@ import (
 
 	locationHandler "github.com/sainak/bitsb/bitsb/delivery/http/handler"
 	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/utils/middleware"
+	"github.com/sainak/bitsb/domain/middleware"
 )
 
 func RegisterLocationRoutes(
