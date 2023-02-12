@@ -41,6 +41,7 @@ func RegisterBusRouteRoutes(
 		r.Use(jwtMiddleware)
 		r.Route("/bus-routes", func(r chi.Router) {
 			r.Get("/", h.ListAll)
+			r.Get("/for-user", h.BusesForUser)
 			r.With(middleware.AccessAbove(domain.Admin)).Post("/", h.Create)
 		})
 		r.Route("/bus-route", func(r chi.Router) {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/sainak/bitsb/domain"
 	"github.com/sainak/bitsb/domain/api"
+	"github.com/sainak/bitsb/domain/errors"
 	"github.com/sainak/bitsb/pkg/handler"
 )
 
@@ -43,6 +44,28 @@ func (h *BusRouteHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	busRoutes, nextCursor, err := h.service.ListAll(r.Context(), cursor, limit, locations)
+	if err != nil {
+		api.RespondForError(w, r, err)
+		return
+	}
+
+	w.Header().Set("X-Cursor", nextCursor)
+	render.JSON(w, r, busRoutes)
+}
+
+func (h *BusRouteHandler) BusesForUser(w http.ResponseWriter, r *http.Request) {
+	cursor := r.URL.Query().Get("cursor")
+	limit := handler.GetLimit(r)
+
+	user := r.Context().Value("user").(domain.User)
+	homeLocation := user.HomeLocationID.ValueOrZero()
+	workLocation := user.WorkLocationID.ValueOrZero()
+	if homeLocation == 0 || workLocation == 0 {
+		api.RespondForError(w, r, errors.New(http.StatusBadRequest, "user has no home or work location"))
+		return
+	}
+
+	busRoutes, nextCursor, err := h.service.ListAll(r.Context(), cursor, limit, []int64{homeLocation, workLocation})
 	if err != nil {
 		api.RespondForError(w, r, err)
 		return

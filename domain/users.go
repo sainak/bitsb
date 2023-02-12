@@ -16,15 +16,17 @@ const (
 )
 
 type User struct {
-	ID        int64       `json:"id" db:"id"`
-	FirstName string      `json:"first_name"  db:"first_name"`
-	LastName  string      `json:"last_name" db:"last_name"`
-	Email     string      `json:"email" db:"email"`
-	Password  string      `json:"-" db:"password"`
-	Access    AccessLevel `json:"-" db:"access_level"`
-	LastLogin null.Time   `json:"last_login" db:"last_login"`
-	CreatedAt time.Time   `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time   `json:"updated_at" db:"updated_at"`
+	ID             int64       `json:"id" db:"id"`
+	FirstName      string      `json:"first_name"  db:"first_name"`
+	LastName       string      `json:"last_name" db:"last_name"`
+	Email          string      `json:"email" db:"email"`
+	HomeLocationID null.Int    `json:"home_location_id" db:"home_location_id"`
+	WorkLocationID null.Int    `json:"work_location_id" db:"work_location_id"`
+	Password       string      `json:"-" db:"password"`
+	Access         AccessLevel `json:"-" db:"access_level"`
+	LastLogin      null.Time   `json:"last_login" db:"last_login"`
+	CreatedAt      time.Time   `json:"created_at" db:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at" db:"updated_at"`
 }
 
 type UserLoginForm struct {
@@ -37,10 +39,12 @@ func (u UserLoginForm) Bind(r *http.Request) error {
 }
 
 type UserRegisterForm struct {
-	FirstName string `json:"first_name"  binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
-	Email     string `json:"email" binding:"required"`
-	Password  string `json:"password" binding:"required"`
+	FirstName      string   `json:"first_name"  binding:"required"`
+	LastName       string   `json:"last_name" binding:"required"`
+	Email          string   `json:"email" binding:"required"`
+	Password       string   `json:"password" binding:"required"`
+	HomeLocationID null.Int `json:"home_location_id"`
+	WorkLocationID null.Int `json:"work_location_id"`
 }
 
 func (u UserRegisterForm) Bind(r *http.Request) error {

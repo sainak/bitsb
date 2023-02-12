@@ -59,11 +59,13 @@ func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := &domain.User{
-		FirstName: data.FirstName,
-		LastName:  data.LastName,
-		Email:     data.Email,
-		Password:  data.Password,
-		Access:    domain.Passenger,
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
+		Email:          data.Email,
+		Password:       data.Password,
+		Access:         domain.Passenger,
+		HomeLocationID: data.HomeLocationID,
+		WorkLocationID: data.WorkLocationID,
 	}
 
 	err = u.service.Signup(r.Context(), user)
