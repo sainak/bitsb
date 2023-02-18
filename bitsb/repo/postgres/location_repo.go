@@ -48,8 +48,7 @@ func (l LocationRepository) SelectAll(
 		return locations, "", err
 	}
 	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
+		if err := rows.Close(); err != nil {
 			logrus.Error(err)
 		}
 	}(rows)
