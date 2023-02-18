@@ -135,17 +135,25 @@ func (s *BusRouteServiceTestSuite) TestGetByID() {
 		require.Empty(t, route)
 	})
 
-	//t.Run("when get route by id is unsuccessful with invalid locations", func(t *testing.T) {
-	//	s.locationRepo.
-	//		On("SelectByIDArray", mock.Anything, busRoute.LocationIDS).Unset()
-	//	s.locationRepo.
-	//		On("SelectByIDArray", mock.Anything, busRoute.LocationIDS).
-	//		Return(nil, fmt.Errorf("error"))
-	//
-	//	route, err := s.service.GetByID(context.Background(), int64(2))
-	//	require.Error(t, err)
-	//	require.Empty(t, route)
-	//})
+	t.Run("when get route by id is unsuccessful with invalid locations", func(t *testing.T) {
+		invalidBusRoute := &domain.BusRoute{
+			ID:          3,
+			Name:        "Test Route 1",
+			MinPrice:    3,
+			MaxPrice:    10,
+			LocationIDS: []int64{999, 33},
+		}
+		s.repo.
+			On("SelectByID", mock.Anything, invalidBusRoute.ID).
+			Return(invalidBusRoute, nil)
+		s.locationRepo.
+			On("SelectByIDArray", mock.Anything, invalidBusRoute.LocationIDS).
+			Return(nil, fmt.Errorf("error"))
+
+		route, err := s.service.GetByID(context.Background(), invalidBusRoute.ID)
+		require.Error(t, err)
+		require.Empty(t, route)
+	})
 }
 
 func (s *BusRouteServiceTestSuite) TestCalculateTicketPrice() {
