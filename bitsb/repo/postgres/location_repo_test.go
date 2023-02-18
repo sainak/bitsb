@@ -248,7 +248,7 @@ func (s *LocationRepositoryTestSuite) TestUpdate() {
 			WillReturnResult(sqlmock.NewResult(0, 0))
 		s.mock.ExpectCommit()
 
-		err := s.repo.Update(context.Background(), lc)
+		err := s.repo.Update(context.Background(), &lc)
 		require.Error(t, err)
 	})
 }

@@ -46,6 +46,7 @@ func RegisterBusRouteRoutes(
 		})
 		r.Route("/bus-route", func(r chi.Router) {
 			r.Get("/{id}", h.GetByID)
+			r.Get("/{id}/ticket-price", h.TicketPrice)
 			r.With(middleware.AccessAbove(domain.Admin)).Patch("/{id}", h.Update)
 			r.With(middleware.AccessAbove(domain.Admin)).Delete("/{id}", h.Delete)
 		})

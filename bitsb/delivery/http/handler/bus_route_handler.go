@@ -7,10 +7,12 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/sirupsen/logrus"
 
 	"github.com/sainak/bitsb/domain"
 	"github.com/sainak/bitsb/domain/api"
 	"github.com/sainak/bitsb/domain/errors"
+	"github.com/sainak/bitsb/domain/middleware"
 	"github.com/sainak/bitsb/pkg/handler"
 )
 
@@ -43,8 +45,11 @@ func (h *BusRouteHandler) ListAll(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	logrus.Debug(locations)
+
 	busRoutes, nextCursor, err := h.service.ListAll(r.Context(), cursor, limit, locations)
 	if err != nil {
+		logrus.Error(err)
 		api.RespondForError(w, r, err)
 		return
 	}
@@ -57,7 +62,7 @@ func (h *BusRouteHandler) BusesForUser(w http.ResponseWriter, r *http.Request) {
 	cursor := r.URL.Query().Get("cursor")
 	limit := handler.GetLimit(r)
 
-	user := r.Context().Value("user").(domain.User)
+	user := r.Context().Value(middleware.UserCtxKey).(domain.User)
 	homeLocation := user.HomeLocationID.ValueOrZero()
 	workLocation := user.WorkLocationID.ValueOrZero()
 	if homeLocation == 0 || workLocation == 0 {
@@ -104,6 +109,8 @@ func (h *BusRouteHandler) Create(w http.ResponseWriter, r *http.Request) {
 		EndTime:     data.EndTime,
 		Interval:    data.Interval,
 		LocationIDS: data.LocationIDS,
+		MaxPrice:    data.MaxPrice,
+		MinPrice:    data.MinPrice,
 	}
 
 	if err = h.service.Create(r.Context(), busRoute); err != nil {
@@ -162,16 +169,20 @@ func (h *BusRouteHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *BusRouteHandler) TicketPrice(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
 	if err != nil {
+		logrus.Error(err, "id")
 		api.RespondForError(w, r, err)
 		return
 	}
 	start, err := strconv.ParseInt(r.URL.Query().Get("start"), 10, 64)
 	if err != nil {
+		logrus.Error(err, "start")
 		api.RespondForError(w, r, err)
 		return
 	}
 	end, err := strconv.ParseInt(r.URL.Query().Get("end"), 10, 64)
 	if err != nil {
+		logrus.Error(err, "end")
+
 		api.RespondForError(w, r, err)
 		return
 	}

@@ -30,7 +30,7 @@ func (b *BusRouteRepository) SelectAll(
 	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at  FROM bus_routes 
 				WHERE created_at < $1 ORDER BY created_at DESC LIMIT $2;`
 
-	queryWithStops := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes
+	queryWithStops := `SELECT  id, name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at FROM bus_routes
     						WHERE location_ids @> cast($3 as int[]) AND created_at < $1 ORDER BY created_at DESC LIMIT $2;`
 
 	decodedCursor, err := repo.DecodeCursor(cursor)
