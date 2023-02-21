@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/undefinedlabs/go-mpatch"
 
-	"github.com/sainak/bitsb/domain"
+	"github.com/sainak/bitsb/bitsb"
 	"github.com/sainak/bitsb/pkg/repo"
 )
 
@@ -20,7 +20,7 @@ type LocationRepositoryTestSuite struct {
 	suite.Suite
 	db   *sql.DB
 	mock sqlmock.Sqlmock
-	repo domain.LocationStorer
+	repo bitsb.LocationStorer
 }
 
 func TestLocationRepositoryTestSuite(t *testing.T) {
@@ -162,7 +162,7 @@ func (s *LocationRepositoryTestSuite) TestSelectAll() {
 func (s *LocationRepositoryTestSuite) TestSelectByID() {
 	t := s.T()
 
-	location := &domain.Location{
+	location := &bitsb.Location{
 		ID:   1,
 		Name: "Test Location",
 	}
@@ -205,7 +205,7 @@ func (s *LocationRepositoryTestSuite) SelectByIDArray() {
 
 	t.Skip() // TODO: fix test not working
 
-	location := &domain.Location{
+	location := &bitsb.Location{
 		ID:   1,
 		Name: "Test Location",
 	}
@@ -229,7 +229,7 @@ func (s *LocationRepositoryTestSuite) SelectByIDArray() {
 
 		got, err := s.repo.SelectByIDArray(context.Background(), []int64{location.ID})
 		require.NoError(t, err)
-		require.Equal(t, []*domain.Location{location}, got)
+		require.Equal(t, []*bitsb.Location{location}, got)
 	})
 
 	t.Run("when select by location id array is not successful", func(t *testing.T) {
@@ -246,7 +246,7 @@ func (s *LocationRepositoryTestSuite) SelectByIDArray() {
 func (s *LocationRepositoryTestSuite) TestInsert() {
 	t := s.T()
 
-	location := &domain.Location{
+	location := &bitsb.Location{
 		Name: "Test Location",
 	}
 
@@ -281,7 +281,7 @@ func (s *LocationRepositoryTestSuite) TestInsert() {
 func (s *LocationRepositoryTestSuite) TestUpdate() {
 	t := s.T()
 
-	location := &domain.Location{
+	location := &bitsb.Location{
 		ID:        1,
 		Name:      "Test Location",
 		UpdatedAt: time.Now(),
@@ -306,7 +306,7 @@ func (s *LocationRepositoryTestSuite) TestUpdate() {
 	})
 
 	t.Run("when no rows affected", func(t *testing.T) {
-		lc := domain.Location{
+		lc := bitsb.Location{
 			ID:        2,
 			Name:      "Test Location",
 			UpdatedAt: time.Now(),

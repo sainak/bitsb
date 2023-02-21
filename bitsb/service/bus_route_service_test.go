@@ -11,15 +11,15 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/undefinedlabs/go-mpatch"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/mocks"
+	"github.com/sainak/bitsb/bitsb"
+	mocks2 "github.com/sainak/bitsb/mocks"
 )
 
 type BusRouteServiceTestSuite struct {
 	suite.Suite
-	service      domain.BusRouteServiceProvider
-	repo         *mocks.BusRouteStorer
-	locationRepo *mocks.LocationStorer
+	service      bitsb.BusRouteServiceProvider
+	repo         *mocks2.BusRouteStorer
+	locationRepo *mocks2.LocationStorer
 }
 
 func TestBusRouteServiceTestSuite(t *testing.T) {
@@ -39,15 +39,15 @@ func TestBusRouteServiceTestSuite(t *testing.T) {
 }
 
 func (s *BusRouteServiceTestSuite) SetupTest() {
-	s.repo = mocks.NewBusRouteStorer(s.T())
-	s.locationRepo = mocks.NewLocationStorer(s.T())
+	s.repo = mocks2.NewBusRouteStorer(s.T())
+	s.locationRepo = mocks2.NewLocationStorer(s.T())
 	s.service = NewBusRouteService(s.repo, s.locationRepo)
 }
 
 func (s *BusRouteServiceTestSuite) TestListAll() {
 	t := s.T()
 
-	busRoutes := []*domain.BusRoute{
+	busRoutes := []*bitsb.BusRoute{
 		{
 			ID:   1,
 			Name: "Test Route 1",
@@ -72,7 +72,7 @@ func (s *BusRouteServiceTestSuite) TestListAll() {
 	t.Run("when list all routes is unsuccessful", func(t *testing.T) {
 		s.repo.
 			On("SelectAll", mock.Anything, "awd342", int64(10), []int64{}).
-			Return([]*domain.BusRoute{}, "", fmt.Errorf("error"))
+			Return([]*bitsb.BusRoute{}, "", fmt.Errorf("error"))
 
 		routes, cursor, err := s.service.ListAll(context.Background(), "awd342", int64(10), []int64{})
 		require.Error(t, err)
@@ -84,7 +84,7 @@ func (s *BusRouteServiceTestSuite) TestListAll() {
 func (s *BusRouteServiceTestSuite) TestGetByID() {
 	t := s.T()
 
-	busRoute := &domain.BusRoute{
+	busRoute := &bitsb.BusRoute{
 		ID:          1,
 		Name:        "Test Route 1",
 		MinPrice:    3,
@@ -92,17 +92,17 @@ func (s *BusRouteServiceTestSuite) TestGetByID() {
 		LocationIDS: []int64{1, 2},
 	}
 
-	locationDetails := []*domain.Location{
+	locationDetails := []*bitsb.Location{
 		{ID: 1, Name: "location 1"},
 		{ID: 2, Name: "location 2"},
 	}
 
-	locations := []*domain.LocationForm{
+	locations := []*bitsb.LocationForm{
 		{"location 1"},
 		{"location 2"},
 	}
 
-	routeWithLoc := &domain.BusRoute{
+	routeWithLoc := &bitsb.BusRoute{
 		ID:          1,
 		Name:        "Test Route 1",
 		MinPrice:    3,
@@ -136,7 +136,7 @@ func (s *BusRouteServiceTestSuite) TestGetByID() {
 	})
 
 	t.Run("when get route by id is unsuccessful with invalid locations", func(t *testing.T) {
-		invalidBusRoute := &domain.BusRoute{
+		invalidBusRoute := &bitsb.BusRoute{
 			ID:          3,
 			Name:        "Test Route 1",
 			MinPrice:    3,
@@ -159,7 +159,7 @@ func (s *BusRouteServiceTestSuite) TestGetByID() {
 func (s *BusRouteServiceTestSuite) TestCalculateTicketPrice() {
 	t := s.T()
 
-	busRoute := &domain.BusRoute{
+	busRoute := &bitsb.BusRoute{
 		ID:          1,
 		Name:        "Test Route 1",
 		MinPrice:    3,
@@ -212,7 +212,7 @@ func (s *BusRouteServiceTestSuite) TestCalculateTicketPrice() {
 func (s *BusRouteServiceTestSuite) TestCreate() {
 	t := s.T()
 
-	busRoute := &domain.BusRoute{
+	busRoute := &bitsb.BusRoute{
 		ID:          1,
 		Name:        "Test Route 1",
 		MinPrice:    3,
@@ -231,10 +231,10 @@ func (s *BusRouteServiceTestSuite) TestCreate() {
 
 	t.Run("when create route is unsuccessful", func(t *testing.T) {
 		s.repo.
-			On("Insert", mock.Anything, &domain.BusRoute{}).
+			On("Insert", mock.Anything, &bitsb.BusRoute{}).
 			Return(fmt.Errorf("error"))
 
-		err := s.service.Create(context.Background(), &domain.BusRoute{})
+		err := s.service.Create(context.Background(), &bitsb.BusRoute{})
 		require.Error(t, err)
 	})
 }
@@ -242,7 +242,7 @@ func (s *BusRouteServiceTestSuite) TestCreate() {
 func (s *BusRouteServiceTestSuite) TestUpdate() {
 	t := s.T()
 
-	busRoute := &domain.BusRoute{
+	busRoute := &bitsb.BusRoute{
 		ID:          1,
 		Name:        "Test Route 1",
 		MinPrice:    3,
@@ -261,10 +261,10 @@ func (s *BusRouteServiceTestSuite) TestUpdate() {
 
 	t.Run("when update route is unsuccessful", func(t *testing.T) {
 		s.repo.
-			On("Update", mock.Anything, &domain.BusRoute{}).
+			On("Update", mock.Anything, &bitsb.BusRoute{}).
 			Return(fmt.Errorf("error"))
 
-		err := s.service.Update(context.Background(), &domain.BusRoute{})
+		err := s.service.Update(context.Background(), &bitsb.BusRoute{})
 		require.Error(t, err)
 	})
 }

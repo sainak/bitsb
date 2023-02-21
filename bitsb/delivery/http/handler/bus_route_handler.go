@@ -9,11 +9,12 @@ import (
 	"github.com/go-chi/render"
 	"github.com/sirupsen/logrus"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/api"
-	"github.com/sainak/bitsb/domain/errors"
-	"github.com/sainak/bitsb/domain/middleware"
+	"github.com/sainak/bitsb/api"
+	"github.com/sainak/bitsb/apperrors"
+	"github.com/sainak/bitsb/bitsb"
 	"github.com/sainak/bitsb/pkg/handler"
+	"github.com/sainak/bitsb/users"
+	"github.com/sainak/bitsb/users/delivery/http/middleware"
 )
 
 type TicketPriceResponse struct {
@@ -21,10 +22,10 @@ type TicketPriceResponse struct {
 }
 
 type BusRouteHandler struct {
-	service domain.BusRouteServiceProvider
+	service bitsb.BusRouteServiceProvider
 }
 
-func NewBusRouteHandler(service domain.BusRouteServiceProvider) *BusRouteHandler {
+func NewBusRouteHandler(service bitsb.BusRouteServiceProvider) *BusRouteHandler {
 	return &BusRouteHandler{
 		service: service,
 	}
@@ -62,11 +63,11 @@ func (h *BusRouteHandler) BusesForUser(w http.ResponseWriter, r *http.Request) {
 	cursor := r.URL.Query().Get("cursor")
 	limit := handler.GetLimit(r)
 
-	user := r.Context().Value(middleware.UserCtxKey).(domain.User)
+	user := r.Context().Value(middleware.UserCtxKey).(users.User)
 	homeLocation := user.HomeLocationID.ValueOrZero()
 	workLocation := user.WorkLocationID.ValueOrZero()
 	if homeLocation == 0 || workLocation == 0 {
-		api.RespondForError(w, r, errors.New(http.StatusBadRequest, "user has no home or work location"))
+		api.RespondForError(w, r, apperrors.New(http.StatusBadRequest, "user has no home or work location"))
 		return
 	}
 
@@ -95,14 +96,14 @@ func (h *BusRouteHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BusRouteHandler) Create(w http.ResponseWriter, r *http.Request) {
-	data := &domain.BusRouteForm{}
+	data := &bitsb.BusRouteForm{}
 	err := render.Bind(r, data)
 	if err != nil {
 		api.RespondForError(w, r, err)
 		return
 	}
 
-	busRoute := &domain.BusRoute{
+	busRoute := &bitsb.BusRoute{
 		Name:        data.Name,
 		Number:      data.Number,
 		StartTime:   data.StartTime,
@@ -126,14 +127,14 @@ func (h *BusRouteHandler) Update(w http.ResponseWriter, r *http.Request) {
 		api.RespondForError(w, r, err)
 		return
 	}
-	data := &domain.BusRouteForm{}
+	data := &bitsb.BusRouteForm{}
 	err = render.Bind(r, data)
 	if err != nil {
 		api.RespondForError(w, r, err)
 		return
 	}
 
-	busRoute := &domain.BusRoute{
+	busRoute := &bitsb.BusRoute{
 		ID:          id,
 		Name:        data.Name,
 		Number:      data.Number,

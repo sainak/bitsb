@@ -7,37 +7,37 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/errors"
+	"github.com/sainak/bitsb/apperrors"
 	"github.com/sainak/bitsb/pkg/jwt"
 	"github.com/sainak/bitsb/pkg/utils"
+	"github.com/sainak/bitsb/users"
 )
 
 type UserService struct {
-	repo domain.UserStorer
+	repo users.UserStorer
 	jwt  *jwt.JWT
 }
 
-func NewUserService(repo domain.UserStorer, jwtInstance *jwt.JWT) domain.UserServiceProvider {
+func NewUserService(repo users.UserStorer, jwtInstance *jwt.JWT) users.UserServiceProvider {
 	return &UserService{
 		repo: repo,
 		jwt:  jwtInstance,
 	}
 }
 
-func (u UserService) Login(ctx context.Context, creds *domain.UserLoginForm) (domain.Token, error) {
-	token := domain.Token{}
+func (u UserService) Login(ctx context.Context, creds *users.UserLoginForm) (users.Token, error) {
+	token := users.Token{}
 
 	user, err := u.repo.SelectByEmail(ctx, creds.Email)
 	if err != nil {
 		// user not found
-		err = errors.ErrInvalidCredentials
+		err = apperrors.ErrInvalidCredentials
 		return token, err
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(creds.Password))
 	if err != nil {
 		// wrong password
-		err = errors.ErrInvalidCredentials
+		err = apperrors.ErrInvalidCredentials
 		return token, err
 	}
 
@@ -59,19 +59,19 @@ func (u UserService) Login(ctx context.Context, creds *domain.UserLoginForm) (do
 	return token, nil
 }
 
-func (u UserService) RefreshToken(refreshToken string) (domain.Token, error) {
+func (u UserService) RefreshToken(refreshToken string) (users.Token, error) {
 	token, err := u.jwt.RefreshToken(refreshToken)
 	if err != nil {
-		err = errors.ErrInvalidToken
+		err = apperrors.ErrInvalidToken
 	}
-	return domain.Token{AuthToken: token}, err
+	return users.Token{AuthToken: token}, err
 }
 
-func (u UserService) GetByID(ctx context.Context, id int64) (domain.User, error) {
+func (u UserService) GetByID(ctx context.Context, id int64) (users.User, error) {
 	return u.repo.SelectByID(ctx, id)
 }
 
-func (u UserService) Signup(ctx context.Context, user *domain.User) error {
+func (u UserService) Signup(ctx context.Context, user *users.User) error {
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return err
@@ -80,6 +80,6 @@ func (u UserService) Signup(ctx context.Context, user *domain.User) error {
 	return u.repo.Insert(ctx, user)
 }
 
-func (u UserService) Update(ctx context.Context, user *domain.User) error {
+func (u UserService) Update(ctx context.Context, user *users.User) error {
 	return u.repo.Update(ctx, user)
 }

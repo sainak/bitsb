@@ -5,13 +5,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/sainak/bitsb/domain"
+	"github.com/sainak/bitsb/users"
 	"github.com/sainak/bitsb/users/delivery/http/handler"
 )
 
 func RegisterRoutes(
 	router *chi.Mux,
-	service domain.UserServiceProvider,
+	service users.UserServiceProvider,
 	jwtMiddleware func(next http.Handler) http.Handler,
 ) {
 	h := handler.New(service)

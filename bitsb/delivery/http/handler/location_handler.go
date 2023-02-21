@@ -8,17 +8,17 @@ import (
 	"github.com/go-chi/render"
 	"github.com/sirupsen/logrus"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/api"
+	"github.com/sainak/bitsb/api"
+	"github.com/sainak/bitsb/bitsb"
 	"github.com/sainak/bitsb/pkg/handler"
 	"github.com/sainak/bitsb/pkg/repo"
 )
 
 type LocationHandler struct {
-	service domain.LocationServiceProvider
+	service bitsb.LocationServiceProvider
 }
 
-func NewLocationHandler(service domain.LocationServiceProvider) *LocationHandler {
+func NewLocationHandler(service bitsb.LocationServiceProvider) *LocationHandler {
 	return &LocationHandler{
 		service: service,
 	}
@@ -63,13 +63,13 @@ func (l *LocationHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (l *LocationHandler) Create(w http.ResponseWriter, r *http.Request) {
-	data := &domain.LocationForm{}
+	data := &bitsb.LocationForm{}
 	if err := render.Bind(r, data); err != nil {
 		api.RespondForError(w, r, err)
 		return
 	}
 
-	location := &domain.Location{
+	location := &bitsb.Location{
 		Name: data.Name,
 	}
 
@@ -88,13 +88,13 @@ func (l *LocationHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &domain.LocationForm{}
+	data := &bitsb.LocationForm{}
 	if err = render.Bind(r, data); err != nil {
 		api.RespondForError(w, r, err)
 		return
 	}
 
-	location := &domain.Location{
+	location := &bitsb.Location{
 		ID:   id,
 		Name: data.Name,
 	}

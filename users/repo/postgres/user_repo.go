@@ -5,19 +5,19 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/sainak/bitsb/domain"
+	"github.com/sainak/bitsb/users"
 )
 
 type UserRepository struct {
 	conn *sql.DB
 }
 
-func NewUserRepository(conn *sql.DB) domain.UserStorer {
+func NewUserRepository(conn *sql.DB) users.UserStorer {
 	return &UserRepository{conn}
 }
 
-func (u UserRepository) fetchUser(ctx context.Context, query string, args ...interface{}) (domain.User, error) {
-	user := domain.User{}
+func (u UserRepository) fetchUser(ctx context.Context, query string, args ...interface{}) (users.User, error) {
+	user := users.User{}
 	err := u.conn.QueryRowContext(ctx, query, args...).Scan(
 		&user.ID,
 		&user.Email,
@@ -32,21 +32,21 @@ func (u UserRepository) fetchUser(ctx context.Context, query string, args ...int
 	return user, err
 }
 
-func (u UserRepository) SelectByID(ctx context.Context, id int64) (domain.User, error) {
+func (u UserRepository) SelectByID(ctx context.Context, id int64) (users.User, error) {
 	query := `SELECT id, email, first_name, last_name, access_level, password, last_login, created_at, updated_at 
 				FROM users 
 				WHERE id=$1`
 	return u.fetchUser(ctx, query, id)
 }
 
-func (u UserRepository) SelectByEmail(ctx context.Context, email string) (domain.User, error) {
+func (u UserRepository) SelectByEmail(ctx context.Context, email string) (users.User, error) {
 	query := `SELECT id, email, first_name, last_name, access_level, password, last_login, created_at, updated_at 
 				FROM users 
 				WHERE email=$1`
 	return u.fetchUser(ctx, query, email)
 }
 
-func (u UserRepository) Insert(ctx context.Context, user *domain.User) error {
+func (u UserRepository) Insert(ctx context.Context, user *users.User) error {
 	query := `INSERT INTO users (email, first_name, last_name, access_level, password, created_at, updated_at) 
 				VALUES ($1, $2, $3, $4, $5, $6, $7) 
 				RETURNING id`
@@ -69,7 +69,7 @@ func (u UserRepository) Insert(ctx context.Context, user *domain.User) error {
 	return err
 }
 
-func (u UserRepository) Update(ctx context.Context, user *domain.User) error {
+func (u UserRepository) Update(ctx context.Context, user *users.User) error {
 	query := `UPDATE users 
 				SET email=$2, first_name=$3, last_name=$4, password=$5, last_login=$6, updated_at=$7 
 				WHERE id=$1`

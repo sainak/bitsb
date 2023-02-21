@@ -11,15 +11,15 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/undefinedlabs/go-mpatch"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/errors"
-	"github.com/sainak/bitsb/domain/mocks"
+	"github.com/sainak/bitsb/apperrors"
+	"github.com/sainak/bitsb/bitsb"
+	"github.com/sainak/bitsb/mocks"
 	"github.com/sainak/bitsb/pkg/repo"
 )
 
 type LocationServiceTestSuite struct {
 	suite.Suite
-	service domain.LocationServiceProvider
+	service bitsb.LocationServiceProvider
 	repo    *mocks.LocationStorer
 }
 
@@ -47,7 +47,7 @@ func (s *LocationServiceTestSuite) SetupTest() {
 func (s *LocationServiceTestSuite) TestListAll() {
 	t := s.T()
 
-	locations := []*domain.Location{
+	locations := []*bitsb.Location{
 		{1, "abc", time.Now(), time.Now()},
 		{2, "def", time.Now(), time.Now()},
 		{3, "abd", time.Now(), time.Now()},
@@ -69,7 +69,7 @@ func (s *LocationServiceTestSuite) TestListAll() {
 	t.Run("whenlist loction is unsuccessful", func(t *testing.T) {
 		s.repo.
 			On("SelectAll", mock.Anything, "", int64(10), repo.Filters{}).
-			Return([]*domain.Location{}, "", fmt.Errorf("error")).
+			Return([]*bitsb.Location{}, "", fmt.Errorf("error")).
 			Once()
 		list, nextCursor, err := s.service.ListAll(context.Background(), "", int64(10), repo.Filters{})
 		require.Error(t, err)
@@ -82,7 +82,7 @@ func (s *LocationServiceTestSuite) TestListAll() {
 func (s *LocationServiceTestSuite) TestGetByID() {
 	t := s.T()
 
-	location := &domain.Location{ID: 1, Name: "abc", CreatedAt: time.Now(), UpdatedAt: time.Now()}
+	location := &bitsb.Location{ID: 1, Name: "abc", CreatedAt: time.Now(), UpdatedAt: time.Now()}
 
 	t.Run("when location is successfully retrieved", func(t *testing.T) {
 		s.repo.
@@ -98,7 +98,7 @@ func (s *LocationServiceTestSuite) TestGetByID() {
 	t.Run("when location is not found", func(t *testing.T) {
 		s.repo.
 			On("SelectByID", mock.Anything, int64(1)).
-			Return(&domain.Location{}, errors.ErrNotFound).
+			Return(&bitsb.Location{}, apperrors.ErrNotFound).
 			Once()
 		loc, err := s.service.GetByID(context.Background(), int64(1))
 		require.Error(t, err)
@@ -109,7 +109,7 @@ func (s *LocationServiceTestSuite) TestGetByID() {
 	t.Run("when location is unsuccessful", func(t *testing.T) {
 		s.repo.
 			On("SelectByID", mock.Anything, int64(1)).
-			Return(&domain.Location{}, fmt.Errorf("error")).
+			Return(&bitsb.Location{}, fmt.Errorf("error")).
 			Once()
 		loc, err := s.service.GetByID(context.Background(), int64(1))
 		require.Error(t, err)
@@ -126,7 +126,7 @@ func (s *LocationServiceTestSuite) TestCreate() {
 			On("Insert", mock.Anything, mock.Anything).
 			Return(nil).
 			Once()
-		err := s.service.Create(context.Background(), &domain.Location{Name: "abc"})
+		err := s.service.Create(context.Background(), &bitsb.Location{Name: "abc"})
 		require.NoError(t, err)
 		s.repo.AssertExpectations(t)
 	})
@@ -136,7 +136,7 @@ func (s *LocationServiceTestSuite) TestCreate() {
 			On("Insert", mock.Anything, mock.Anything).
 			Return(fmt.Errorf("error")).
 			Once()
-		err := s.service.Create(context.Background(), &domain.Location{Name: "abc"})
+		err := s.service.Create(context.Background(), &bitsb.Location{Name: "abc"})
 		require.Error(t, err)
 		s.repo.AssertExpectations(t)
 	})
@@ -150,7 +150,7 @@ func (s *LocationServiceTestSuite) TestUpdate() {
 			On("Update", mock.Anything, mock.Anything).
 			Return(nil).
 			Once()
-		err := s.service.Update(context.Background(), &domain.Location{ID: 1, Name: "abc"})
+		err := s.service.Update(context.Background(), &bitsb.Location{ID: 1, Name: "abc"})
 		require.NoError(t, err)
 		s.repo.AssertExpectations(t)
 	})
@@ -160,7 +160,7 @@ func (s *LocationServiceTestSuite) TestUpdate() {
 			On("Update", mock.Anything, mock.Anything).
 			Return(fmt.Errorf("error")).
 			Once()
-		err := s.service.Update(context.Background(), &domain.Location{ID: 1, Name: "abc"})
+		err := s.service.Update(context.Background(), &bitsb.Location{ID: 1, Name: "abc"})
 		require.Error(t, err)
 		s.repo.AssertExpectations(t)
 	})

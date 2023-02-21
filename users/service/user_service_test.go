@@ -12,15 +12,15 @@ import (
 	"github.com/undefinedlabs/go-mpatch"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/mocks"
+	"github.com/sainak/bitsb/mocks"
 	"github.com/sainak/bitsb/pkg/jwt"
 	"github.com/sainak/bitsb/pkg/utils"
+	"github.com/sainak/bitsb/users"
 )
 
 type UserServiceTestSuite struct {
 	suite.Suite
-	service domain.UserServiceProvider
+	service users.UserServiceProvider
 	repo    *mocks.UserStorer
 	jwt     *jwt.JWT
 }
@@ -55,13 +55,13 @@ func (s *UserServiceTestSuite) TestLogin() {
 	if err != nil {
 		t.Fatal(err)
 	}
-	user := domain.User{
+	user := users.User{
 		ID:        1,
 		FirstName: "Tester",
 		LastName:  "User",
 		Email:     "testuser@email.com",
 		Password:  hashedPassword,
-		Access:    domain.Passenger,
+		Access:    users.Passenger,
 		LastLogin: null.TimeFrom(time.Now()),
 		CreatedAt: time.Time{},
 		UpdatedAt: time.Time{},
@@ -74,7 +74,7 @@ func (s *UserServiceTestSuite) TestLogin() {
 		s.repo.
 			On("Update", mock.Anything, &user).
 			Return(nil)
-		creds := &domain.UserLoginForm{
+		creds := &users.UserLoginForm{
 			Email:    user.Email,
 			Password: password,
 		}
@@ -87,7 +87,7 @@ func (s *UserServiceTestSuite) TestLogin() {
 
 	t.Run("when password is incorrect", func(t *testing.T) {
 		// reuse mock result from previous function
-		creds := &domain.UserLoginForm{
+		creds := &users.UserLoginForm{
 			Email:    user.Email,
 			Password: "incorrect_password",
 		}
@@ -99,8 +99,8 @@ func (s *UserServiceTestSuite) TestLogin() {
 	t.Run("when user does not exist", func(t *testing.T) {
 		s.repo.
 			On("SelectByEmail", mock.Anything, "nobody@example.com").
-			Return(domain.User{}, fmt.Errorf("record not forund"))
-		creds := &domain.UserLoginForm{
+			Return(users.User{}, fmt.Errorf("record not forund"))
+		creds := &users.UserLoginForm{
 			Email:    "nobody@example.com",
 			Password: password,
 		}

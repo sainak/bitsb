@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-chi/render"
 
-	"github.com/sainak/bitsb/domain/errors"
+	"github.com/sainak/bitsb/apperrors"
 )
 
 // ErrorResponse represent the api error struct
@@ -14,7 +14,7 @@ type ErrorResponse struct {
 }
 
 func RespondForError(w http.ResponseWriter, r *http.Request, err error) {
-	e := errors.ParseError(err)
+	e := apperrors.ParseError(err)
 	render.Status(r, e.StatusCode)
 	render.JSON(w, r, ErrorResponse{e.Message})
 }

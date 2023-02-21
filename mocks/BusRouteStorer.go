@@ -5,7 +5,8 @@ package mocks
 import (
 	context "context"
 
-	domain "github.com/sainak/bitsb/domain"
+	bitsb "github.com/sainak/bitsb/bitsb"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -29,11 +30,11 @@ func (_m *BusRouteStorer) Delete(ctx context.Context, id int64) error {
 }
 
 // Insert provides a mock function with given fields: ctx, busRoute
-func (_m *BusRouteStorer) Insert(ctx context.Context, busRoute *domain.BusRoute) error {
+func (_m *BusRouteStorer) Insert(ctx context.Context, busRoute *bitsb.BusRoute) error {
 	ret := _m.Called(ctx, busRoute)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.BusRoute) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *bitsb.BusRoute) error); ok {
 		r0 = rf(ctx, busRoute)
 	} else {
 		r0 = ret.Error(0)
@@ -43,15 +44,15 @@ func (_m *BusRouteStorer) Insert(ctx context.Context, busRoute *domain.BusRoute)
 }
 
 // SelectAll provides a mock function with given fields: ctx, cursor, limit, locations
-func (_m *BusRouteStorer) SelectAll(ctx context.Context, cursor string, limit int64, locations []int64) ([]*domain.BusRoute, string, error) {
+func (_m *BusRouteStorer) SelectAll(ctx context.Context, cursor string, limit int64, locations []int64) ([]*bitsb.BusRoute, string, error) {
 	ret := _m.Called(ctx, cursor, limit, locations)
 
-	var r0 []*domain.BusRoute
-	if rf, ok := ret.Get(0).(func(context.Context, string, int64, []int64) []*domain.BusRoute); ok {
+	var r0 []*bitsb.BusRoute
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, []int64) []*bitsb.BusRoute); ok {
 		r0 = rf(ctx, cursor, limit, locations)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.BusRoute)
+			r0 = ret.Get(0).([]*bitsb.BusRoute)
 		}
 	}
 
@@ -73,15 +74,15 @@ func (_m *BusRouteStorer) SelectAll(ctx context.Context, cursor string, limit in
 }
 
 // SelectByID provides a mock function with given fields: ctx, id
-func (_m *BusRouteStorer) SelectByID(ctx context.Context, id int64) (*domain.BusRoute, error) {
+func (_m *BusRouteStorer) SelectByID(ctx context.Context, id int64) (*bitsb.BusRoute, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *domain.BusRoute
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *domain.BusRoute); ok {
+	var r0 *bitsb.BusRoute
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *bitsb.BusRoute); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*domain.BusRoute)
+			r0 = ret.Get(0).(*bitsb.BusRoute)
 		}
 	}
 
@@ -96,11 +97,11 @@ func (_m *BusRouteStorer) SelectByID(ctx context.Context, id int64) (*domain.Bus
 }
 
 // Update provides a mock function with given fields: ctx, busRoute
-func (_m *BusRouteStorer) Update(ctx context.Context, busRoute *domain.BusRoute) error {
+func (_m *BusRouteStorer) Update(ctx context.Context, busRoute *bitsb.BusRoute) error {
 	ret := _m.Called(ctx, busRoute)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.BusRoute) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *bitsb.BusRoute) error); ok {
 		r0 = rf(ctx, busRoute)
 	} else {
 		r0 = ret.Error(0)

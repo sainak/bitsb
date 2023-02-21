@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	domain "github.com/sainak/bitsb/domain"
+	users "github.com/sainak/bitsb/users"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -15,11 +15,11 @@ type UserStorer struct {
 }
 
 // Insert provides a mock function with given fields: ctx, user
-func (_m *UserStorer) Insert(ctx context.Context, user *domain.User) error {
+func (_m *UserStorer) Insert(ctx context.Context, user *users.User) error {
 	ret := _m.Called(ctx, user)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *users.User) error); ok {
 		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)
@@ -29,14 +29,14 @@ func (_m *UserStorer) Insert(ctx context.Context, user *domain.User) error {
 }
 
 // SelectByEmail provides a mock function with given fields: ctx, email
-func (_m *UserStorer) SelectByEmail(ctx context.Context, email string) (domain.User, error) {
+func (_m *UserStorer) SelectByEmail(ctx context.Context, email string) (users.User, error) {
 	ret := _m.Called(ctx, email)
 
-	var r0 domain.User
-	if rf, ok := ret.Get(0).(func(context.Context, string) domain.User); ok {
+	var r0 users.User
+	if rf, ok := ret.Get(0).(func(context.Context, string) users.User); ok {
 		r0 = rf(ctx, email)
 	} else {
-		r0 = ret.Get(0).(domain.User)
+		r0 = ret.Get(0).(users.User)
 	}
 
 	var r1 error
@@ -50,14 +50,14 @@ func (_m *UserStorer) SelectByEmail(ctx context.Context, email string) (domain.U
 }
 
 // SelectByID provides a mock function with given fields: ctx, id
-func (_m *UserStorer) SelectByID(ctx context.Context, id int64) (domain.User, error) {
+func (_m *UserStorer) SelectByID(ctx context.Context, id int64) (users.User, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 domain.User
-	if rf, ok := ret.Get(0).(func(context.Context, int64) domain.User); ok {
+	var r0 users.User
+	if rf, ok := ret.Get(0).(func(context.Context, int64) users.User); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(domain.User)
+		r0 = ret.Get(0).(users.User)
 	}
 
 	var r1 error
@@ -71,11 +71,11 @@ func (_m *UserStorer) SelectByID(ctx context.Context, id int64) (domain.User, er
 }
 
 // Update provides a mock function with given fields: ctx, user
-func (_m *UserStorer) Update(ctx context.Context, user *domain.User) error {
+func (_m *UserStorer) Update(ctx context.Context, user *users.User) error {
 	ret := _m.Called(ctx, user)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *users.User) error); ok {
 		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)

@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -13,9 +16,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/undefinedlabs/go-mpatch"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/errors"
-	"github.com/sainak/bitsb/domain/mocks"
+	"github.com/sainak/bitsb/apperrors"
+	"github.com/sainak/bitsb/bitsb"
+	"github.com/sainak/bitsb/mocks"
 	"github.com/sainak/bitsb/pkg/repo"
 )
 
@@ -51,7 +54,7 @@ func (s *LocationHandlerTestSuite) TestListAll() {
 
 	url := "/locations"
 
-	locations := []*domain.Location{
+	locations := []*bitsb.Location{
 		{ID: 1, Name: "Test Location 1"},
 		{ID: 2, Name: "Test Location 2"},
 		{ID: 3, Name: "Test Location 3"},
@@ -87,7 +90,7 @@ func (s *LocationHandlerTestSuite) TestListAll() {
 	t.Run("when service returns error", func(t *testing.T) {
 		s.service.
 			On("ListAll", mock.Anything, "", int64(1), repo.Filters{}).
-			Return([]*domain.Location{}, "", errors.ErrInternalServerError)
+			Return([]*bitsb.Location{}, "", apperrors.ErrInternalServerError)
 
 		r := httptest.NewRequest(http.MethodGet, url, nil)
 		r.URL.RawQuery = "limit=1"
@@ -102,7 +105,7 @@ func (s *LocationHandlerTestSuite) TestListAll() {
 func (s *LocationHandlerTestSuite) TestGetByID() {
 	t := s.T()
 
-	location := &domain.Location{ID: 1, Name: "Test Location 1"}
+	location := &bitsb.Location{ID: 1, Name: "Test Location 1"}
 
 	t.Run("when service returns location successfully", func(t *testing.T) {
 		s.service.
@@ -122,7 +125,7 @@ func (s *LocationHandlerTestSuite) TestGetByID() {
 	t.Run("when service returns error", func(t *testing.T) {
 		s.service.
 			On("GetByID", mock.Anything, int64(3)).
-			Return(&domain.Location{}, errors.ErrInternalServerError)
+			Return(&bitsb.Location{}, apperrors.ErrInternalServerError)
 
 		r := httptest.NewRequest(http.MethodGet, "/location/3", nil)
 		rctx := chi.NewRouteContext()
@@ -137,7 +140,7 @@ func (s *LocationHandlerTestSuite) TestGetByID() {
 	t.Run("when the url param is invalid", func(t *testing.T) {
 		s.service.
 			On("GetByID", mock.Anything, int64(3)).
-			Return(&domain.Location{}, errors.ErrInternalServerError)
+			Return(&bitsb.Location{}, apperrors.ErrInternalServerError)
 
 		r := httptest.NewRequest(http.MethodGet, "/location/invalid", nil)
 		rctx := chi.NewRouteContext()
@@ -151,51 +154,51 @@ func (s *LocationHandlerTestSuite) TestGetByID() {
 }
 
 func (s *LocationHandlerTestSuite) TestCreate() {
-	//t := s.T()
-	//
-	//location := &domain.Location{Name: "Test Location 1"}
-	//
-	//t.Run("when service returns location successfully", func(t *testing.T) {
-	//	s.service.
-	//		On("Create", mock.Anything, &domain.Location{
-	//			Name: "Test Location 1",
-	//		}).
-	//		Return(&domain.Location{ID: 1, Name: "Test Location 1"}, nil)
-	//
-	//	body, _ := json.Marshal(location)
-	//
-	//	r := httptest.NewRequest(http.MethodPost, "/location", bytes.NewReader(body))
-	//	r.Header.Set("Content-Type", "application/json")
-	//	w := httptest.NewRecorder()
-	//
-	//	s.handler.Create(w, r)
-	//	//t.Log(w.Body.String())
-	//	require.Equal(t, http.StatusCreated, w.Code)
-	//})
+	t := s.T()
+	t.Skip() //TODO: fix tests
 
-	//t.Run("when service returns error", func(t *testing.T) {
-	//	s.service.
-	//		On("Create", mock.Anything, mock.Anything).
-	//		Return(&domain.Location{}, errors.ErrInternalServerError)
-	//
-	//	r := httptest.NewRequest(http.MethodPost, "/location", nil)
-	//	w := httptest.NewRecorder()
-	//
-	//	s.handler.Create(w, r)
-	//	require.Equal(t, http.StatusInternalServerError, w.Code)
-	//})
+	location := &bitsb.Location{Name: "Test Location 1"}
 
-	//t.Run("when the body is invalid", func(t *testing.T) {
-	//	s.service.
-	//		On("Create", mock.Anything, mock.Anything).
-	//		Return(&domain.Location{}, errors.ErrInternalServerError)
-	//
-	//	r := httptest.NewRequest(http.MethodPost, "/location", strings.NewReader("invalid"))
-	//	w := httptest.NewRecorder()
-	//
-	//	s.handler.Create(w, r)
-	//	require.Equal(t, http.StatusBadRequest, w.Code)
-	//})
+	t.Run("when service returns location successfully", func(t *testing.T) {
+		s.service.
+			On("Create", mock.Anything, &bitsb.Location{
+				Name: "Test Location 1",
+			}).
+			Return(&bitsb.Location{ID: 1, Name: "Test Location 1"}, nil)
+
+		body, _ := json.Marshal(location)
+
+		r := httptest.NewRequest(http.MethodPost, "/location", bytes.NewReader(body))
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+
+		s.handler.Create(w, r)
+		require.Equal(t, http.StatusCreated, w.Code)
+	})
+
+	t.Run("when service returns error", func(t *testing.T) {
+		s.service.
+			On("Create", mock.Anything, mock.Anything).
+			Return(&bitsb.Location{}, apperrors.ErrInternalServerError)
+
+		r := httptest.NewRequest(http.MethodPost, "/location", nil)
+		w := httptest.NewRecorder()
+
+		s.handler.Create(w, r)
+		require.Equal(t, http.StatusInternalServerError, w.Code)
+	})
+
+	t.Run("when the body is invalid", func(t *testing.T) {
+		s.service.
+			On("Create", mock.Anything, mock.Anything).
+			Return(&bitsb.Location{}, apperrors.ErrInternalServerError)
+
+		r := httptest.NewRequest(http.MethodPost, "/location", strings.NewReader("invalid"))
+		w := httptest.NewRecorder()
+
+		s.handler.Create(w, r)
+		require.Equal(t, http.StatusBadRequest, w.Code)
+	})
 }
 
 func (s *LocationHandlerTestSuite) TestUpdate() {}
@@ -221,7 +224,7 @@ func (s *LocationHandlerTestSuite) TestDelete() {
 	t.Run("when service returns error", func(t *testing.T) {
 		s.service.
 			On("Delete", mock.Anything, int64(3)).
-			Return(errors.ErrInternalServerError)
+			Return(apperrors.ErrInternalServerError)
 
 		r := httptest.NewRequest(http.MethodDelete, "/location/3", nil)
 		rctx := chi.NewRouteContext()
@@ -236,7 +239,7 @@ func (s *LocationHandlerTestSuite) TestDelete() {
 	t.Run("when the url param is invalid", func(t *testing.T) {
 		s.service.
 			On("Delete", mock.Anything, int64(3)).
-			Return(errors.ErrInternalServerError)
+			Return(apperrors.ErrInternalServerError)
 
 		r := httptest.NewRequest(http.MethodDelete, "/location/invalid", nil)
 		rctx := chi.NewRouteContext()

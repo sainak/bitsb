@@ -1,4 +1,4 @@
-package errors
+package apperrors
 
 import (
 	"net/http"
@@ -31,7 +31,7 @@ func GetErrStatusCode(err error) int {
 }
 
 var (
-	// BadRequest errors
+	// BadRequest apperrors
 	ErrBadRequest = &Error{
 		StatusCode: http.StatusBadRequest,
 		Message:    "bad request",
@@ -53,7 +53,7 @@ var (
 		Message:    "invalid location",
 	}
 
-	// Unauthorized errors
+	// Unauthorized apperrors
 	ErrUnauthorized = &Error{
 		StatusCode: http.StatusUnauthorized,
 		Message:    "unauthorized",
@@ -71,19 +71,19 @@ var (
 		Message:    "invalid credentials",
 	}
 
-	// Forbidden errors
+	// Forbidden apperrors
 	ErrForbidden = &Error{
 		StatusCode: http.StatusForbidden,
 		Message:    "forbidden",
 	}
 
-	// Not Found errors
+	// Not Found apperrors
 	ErrNotFound = &Error{
 		StatusCode: http.StatusNotFound,
 		Message:    "entity not found",
 	}
 
-	// Conflict errors
+	// Conflict apperrors
 	ErrConflict = &Error{
 		StatusCode: http.StatusConflict,
 		Message:    "database conflict occurred",
@@ -93,7 +93,7 @@ var (
 		Message:    "entity already exist",
 	}
 
-	// Internal Server errors
+	// Internal Server apperrors
 	ErrInternalServerError = &Error{
 		StatusCode: http.StatusInternalServerError,
 		Message:    "an internal server error occurred, we are checking...",

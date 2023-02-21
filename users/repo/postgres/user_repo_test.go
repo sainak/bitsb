@@ -12,14 +12,14 @@ import (
 	"github.com/undefinedlabs/go-mpatch"
 	"gopkg.in/guregu/null.v4"
 
-	"github.com/sainak/bitsb/domain"
+	"github.com/sainak/bitsb/users"
 )
 
 type UserRepositoryTestSuite struct {
 	suite.Suite
 	db   *sql.DB
 	mock sqlmock.Sqlmock
-	repo domain.UserStorer
+	repo users.UserStorer
 }
 
 func (s *UserRepositoryTestSuite) SetupTest() {
@@ -39,13 +39,13 @@ func TestUserRepositoryTestSuite(t *testing.T) {
 func (s *UserRepositoryTestSuite) TestSelectUser() {
 	t := s.T()
 
-	user := &domain.User{
+	user := &users.User{
 		ID:        1,
 		FirstName: "Jhon",
 		LastName:  "Doe",
 		Email:     "jhon.doe@example.com",
 		Password:  "test_password",
-		Access:    domain.Admin,
+		Access:    users.Admin,
 	}
 
 	t.Run("when select by user id is successful", func(t *testing.T) {
@@ -137,13 +137,13 @@ func (s *UserRepositoryTestSuite) TestInsertUser() {
 		}
 	}(patch)
 
-	user := &domain.User{
+	user := &users.User{
 		ID:        1,
 		FirstName: "Jhon",
 		LastName:  "Doe",
 		Email:     "jhon.doe@example.com",
 		Password:  "test_password",
-		Access:    domain.Admin,
+		Access:    users.Admin,
 	}
 
 	t.Run("when insert is successful", func(t *testing.T) {
@@ -199,7 +199,7 @@ func (s *UserRepositoryTestSuite) TestUpdateUser() {
 		}
 	}(patch)
 
-	user := &domain.User{
+	user := &users.User{
 		ID:        0,
 		FirstName: "",
 		LastName:  "",

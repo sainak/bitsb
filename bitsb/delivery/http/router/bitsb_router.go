@@ -5,14 +5,15 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/sainak/bitsb/bitsb"
 	locationHandler "github.com/sainak/bitsb/bitsb/delivery/http/handler"
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/middleware"
+	"github.com/sainak/bitsb/users"
+	"github.com/sainak/bitsb/users/delivery/http/middleware"
 )
 
 func RegisterLocationRoutes(
 	router *chi.Mux,
-	service domain.LocationServiceProvider,
+	service bitsb.LocationServiceProvider,
 	jwtMiddleware func(next http.Handler) http.Handler,
 ) {
 	h := locationHandler.NewLocationHandler(service)
@@ -21,19 +22,19 @@ func RegisterLocationRoutes(
 		r.Use(jwtMiddleware)
 		r.Route("/locations", func(r chi.Router) {
 			r.Get("/", h.ListAll)
-			r.With(middleware.AccessAbove(domain.Admin)).Post("/", h.Create)
+			r.With(middleware.AccessAbove(users.Admin)).Post("/", h.Create)
 		})
 		r.Route("/location", func(r chi.Router) {
 			r.Get("/{id}", h.GetByID)
-			r.With(middleware.AccessAbove(domain.Admin)).Patch("/{id}", h.Update)
-			r.With(middleware.AccessAbove(domain.Admin)).Delete("/{id}", h.Delete)
+			r.With(middleware.AccessAbove(users.Admin)).Patch("/{id}", h.Update)
+			r.With(middleware.AccessAbove(users.Admin)).Delete("/{id}", h.Delete)
 		})
 	})
 }
 
 func RegisterBusRouteRoutes(
 	router *chi.Mux,
-	service domain.BusRouteServiceProvider,
+	service bitsb.BusRouteServiceProvider,
 	jwtMiddleware func(next http.Handler) http.Handler,
 ) {
 	h := locationHandler.NewBusRouteHandler(service)
@@ -42,13 +43,13 @@ func RegisterBusRouteRoutes(
 		r.Route("/bus-routes", func(r chi.Router) {
 			r.Get("/", h.ListAll)
 			r.Get("/for-user", h.BusesForUser)
-			r.With(middleware.AccessAbove(domain.Admin)).Post("/", h.Create)
+			r.With(middleware.AccessAbove(users.Admin)).Post("/", h.Create)
 		})
 		r.Route("/bus-route", func(r chi.Router) {
 			r.Get("/{id}", h.GetByID)
 			r.Get("/{id}/ticket-price", h.TicketPrice)
-			r.With(middleware.AccessAbove(domain.Admin)).Patch("/{id}", h.Update)
-			r.With(middleware.AccessAbove(domain.Admin)).Delete("/{id}", h.Delete)
+			r.With(middleware.AccessAbove(users.Admin)).Patch("/{id}", h.Update)
+			r.With(middleware.AccessAbove(users.Admin)).Delete("/{id}", h.Delete)
 		})
 	})
 }
