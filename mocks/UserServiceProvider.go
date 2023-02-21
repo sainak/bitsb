@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	domain "github.com/sainak/bitsb/domain"
+	users "github.com/sainak/bitsb/users"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -15,14 +15,14 @@ type UserServiceProvider struct {
 }
 
 // GetByID provides a mock function with given fields: ctx, id
-func (_m *UserServiceProvider) GetByID(ctx context.Context, id int64) (domain.User, error) {
+func (_m *UserServiceProvider) GetByID(ctx context.Context, id int64) (users.User, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 domain.User
-	if rf, ok := ret.Get(0).(func(context.Context, int64) domain.User); ok {
+	var r0 users.User
+	if rf, ok := ret.Get(0).(func(context.Context, int64) users.User); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(domain.User)
+		r0 = ret.Get(0).(users.User)
 	}
 
 	var r1 error
@@ -36,18 +36,18 @@ func (_m *UserServiceProvider) GetByID(ctx context.Context, id int64) (domain.Us
 }
 
 // Login provides a mock function with given fields: ctx, creds
-func (_m *UserServiceProvider) Login(ctx context.Context, creds *domain.UserLoginForm) (domain.Token, error) {
+func (_m *UserServiceProvider) Login(ctx context.Context, creds *users.UserLoginForm) (users.Token, error) {
 	ret := _m.Called(ctx, creds)
 
-	var r0 domain.Token
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserLoginForm) domain.Token); ok {
+	var r0 users.Token
+	if rf, ok := ret.Get(0).(func(context.Context, *users.UserLoginForm) users.Token); ok {
 		r0 = rf(ctx, creds)
 	} else {
-		r0 = ret.Get(0).(domain.Token)
+		r0 = ret.Get(0).(users.Token)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, *domain.UserLoginForm) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, *users.UserLoginForm) error); ok {
 		r1 = rf(ctx, creds)
 	} else {
 		r1 = ret.Error(1)
@@ -57,14 +57,14 @@ func (_m *UserServiceProvider) Login(ctx context.Context, creds *domain.UserLogi
 }
 
 // RefreshToken provides a mock function with given fields: token
-func (_m *UserServiceProvider) RefreshToken(token string) (domain.Token, error) {
+func (_m *UserServiceProvider) RefreshToken(token string) (users.Token, error) {
 	ret := _m.Called(token)
 
-	var r0 domain.Token
-	if rf, ok := ret.Get(0).(func(string) domain.Token); ok {
+	var r0 users.Token
+	if rf, ok := ret.Get(0).(func(string) users.Token); ok {
 		r0 = rf(token)
 	} else {
-		r0 = ret.Get(0).(domain.Token)
+		r0 = ret.Get(0).(users.Token)
 	}
 
 	var r1 error
@@ -78,11 +78,11 @@ func (_m *UserServiceProvider) RefreshToken(token string) (domain.Token, error) 
 }
 
 // Signup provides a mock function with given fields: ctx, user
-func (_m *UserServiceProvider) Signup(ctx context.Context, user *domain.User) error {
+func (_m *UserServiceProvider) Signup(ctx context.Context, user *users.User) error {
 	ret := _m.Called(ctx, user)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *users.User) error); ok {
 		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)
@@ -92,11 +92,11 @@ func (_m *UserServiceProvider) Signup(ctx context.Context, user *domain.User) er
 }
 
 // Update provides a mock function with given fields: ctx, user
-func (_m *UserServiceProvider) Update(ctx context.Context, user *domain.User) error {
+func (_m *UserServiceProvider) Update(ctx context.Context, user *users.User) error {
 	ret := _m.Called(ctx, user)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.User) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *users.User) error); ok {
 		r0 = rf(ctx, user)
 	} else {
 		r0 = ret.Error(0)

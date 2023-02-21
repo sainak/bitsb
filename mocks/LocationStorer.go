@@ -5,7 +5,8 @@ package mocks
 import (
 	context "context"
 
-	domain "github.com/sainak/bitsb/domain"
+	bitsb "github.com/sainak/bitsb/bitsb"
+
 	mock "github.com/stretchr/testify/mock"
 
 	repo "github.com/sainak/bitsb/pkg/repo"
@@ -31,11 +32,11 @@ func (_m *LocationStorer) Delete(ctx context.Context, id int64) error {
 }
 
 // Insert provides a mock function with given fields: ctx, location
-func (_m *LocationStorer) Insert(ctx context.Context, location *domain.Location) error {
+func (_m *LocationStorer) Insert(ctx context.Context, location *bitsb.Location) error {
 	ret := _m.Called(ctx, location)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Location) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *bitsb.Location) error); ok {
 		r0 = rf(ctx, location)
 	} else {
 		r0 = ret.Error(0)
@@ -45,15 +46,15 @@ func (_m *LocationStorer) Insert(ctx context.Context, location *domain.Location)
 }
 
 // SelectAll provides a mock function with given fields: ctx, cursor, limit, filters
-func (_m *LocationStorer) SelectAll(ctx context.Context, cursor string, limit int64, filters repo.Filters) ([]*domain.Location, string, error) {
+func (_m *LocationStorer) SelectAll(ctx context.Context, cursor string, limit int64, filters repo.Filters) ([]*bitsb.Location, string, error) {
 	ret := _m.Called(ctx, cursor, limit, filters)
 
-	var r0 []*domain.Location
-	if rf, ok := ret.Get(0).(func(context.Context, string, int64, repo.Filters) []*domain.Location); ok {
+	var r0 []*bitsb.Location
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, repo.Filters) []*bitsb.Location); ok {
 		r0 = rf(ctx, cursor, limit, filters)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.Location)
+			r0 = ret.Get(0).([]*bitsb.Location)
 		}
 	}
 
@@ -75,15 +76,15 @@ func (_m *LocationStorer) SelectAll(ctx context.Context, cursor string, limit in
 }
 
 // SelectByID provides a mock function with given fields: ctx, id
-func (_m *LocationStorer) SelectByID(ctx context.Context, id int64) (*domain.Location, error) {
+func (_m *LocationStorer) SelectByID(ctx context.Context, id int64) (*bitsb.Location, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 *domain.Location
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *domain.Location); ok {
+	var r0 *bitsb.Location
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *bitsb.Location); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*domain.Location)
+			r0 = ret.Get(0).(*bitsb.Location)
 		}
 	}
 
@@ -98,15 +99,15 @@ func (_m *LocationStorer) SelectByID(ctx context.Context, id int64) (*domain.Loc
 }
 
 // SelectByIDArray provides a mock function with given fields: ctx, ids
-func (_m *LocationStorer) SelectByIDArray(ctx context.Context, ids []int64) ([]*domain.Location, error) {
+func (_m *LocationStorer) SelectByIDArray(ctx context.Context, ids []int64) ([]*bitsb.Location, error) {
 	ret := _m.Called(ctx, ids)
 
-	var r0 []*domain.Location
-	if rf, ok := ret.Get(0).(func(context.Context, []int64) []*domain.Location); ok {
+	var r0 []*bitsb.Location
+	if rf, ok := ret.Get(0).(func(context.Context, []int64) []*bitsb.Location); ok {
 		r0 = rf(ctx, ids)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*domain.Location)
+			r0 = ret.Get(0).([]*bitsb.Location)
 		}
 	}
 
@@ -121,11 +122,11 @@ func (_m *LocationStorer) SelectByIDArray(ctx context.Context, ids []int64) ([]*
 }
 
 // Update provides a mock function with given fields: ctx, location
-func (_m *LocationStorer) Update(ctx context.Context, location *domain.Location) error {
+func (_m *LocationStorer) Update(ctx context.Context, location *bitsb.Location) error {
 	ret := _m.Called(ctx, location)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *domain.Location) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *bitsb.Location) error); ok {
 		r0 = rf(ctx, location)
 	} else {
 		r0 = ret.Error(0)

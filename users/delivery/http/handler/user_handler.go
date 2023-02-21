@@ -5,21 +5,21 @@ import (
 
 	"github.com/go-chi/render"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/api"
-	"github.com/sainak/bitsb/domain/middleware"
+	"github.com/sainak/bitsb/api"
+	"github.com/sainak/bitsb/users"
+	"github.com/sainak/bitsb/users/delivery/http/middleware"
 )
 
 type UserHandler struct {
-	service domain.UserServiceProvider
+	service users.UserServiceProvider
 }
 
-func New(service domain.UserServiceProvider) *UserHandler {
+func New(service users.UserServiceProvider) *UserHandler {
 	return &UserHandler{service}
 }
 
 func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	data := &domain.UserLoginForm{}
+	data := &users.UserLoginForm{}
 	err := render.Bind(r, data)
 	if err != nil {
 		api.RespondForError(w, r, err)
@@ -35,7 +35,7 @@ func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	data := &domain.RefreshTokenFrom{}
+	data := &users.RefreshTokenFrom{}
 	err := render.Bind(r, data)
 	if err != nil {
 		api.RespondForError(w, r, err)
@@ -51,19 +51,21 @@ func (u *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	data := &domain.UserRegisterForm{}
+	data := &users.UserRegisterForm{}
 	err := render.Bind(r, data)
 	if err != nil {
 		api.RespondForError(w, r, err)
 		return
 	}
 
-	user := &domain.User{
-		FirstName: data.FirstName,
-		LastName:  data.LastName,
-		Email:     data.Email,
-		Password:  data.Password,
-		Access:    domain.Passenger,
+	user := &users.User{
+		FirstName:      data.FirstName,
+		LastName:       data.LastName,
+		Email:          data.Email,
+		Password:       data.Password,
+		Access:         users.Passenger,
+		HomeLocationID: data.HomeLocationID,
+		WorkLocationID: data.WorkLocationID,
 	}
 
 	err = u.service.Signup(r.Context(), user)
@@ -77,6 +79,6 @@ func (u *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 func (u *UserHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
 	// extract the user from the context
-	user := r.Context().Value(middleware.UserCtxKey).(*domain.User)
+	user := r.Context().Value(middleware.UserCtxKey).(*users.User)
 	render.JSON(w, r, user)
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 
-	"github.com/sainak/bitsb/domain"
-	"github.com/sainak/bitsb/domain/errors"
+	"github.com/sainak/bitsb/apperrors"
+	"github.com/sainak/bitsb/bitsb"
 	"github.com/sainak/bitsb/pkg/repo"
 )
 
@@ -17,7 +17,7 @@ type BusRouteRepository struct {
 	Conn *sql.DB
 }
 
-func NewBusRouteRepository(conn *sql.DB) domain.BusRouteStorer {
+func NewBusRouteRepository(conn *sql.DB) bitsb.BusRouteStorer {
 	return &BusRouteRepository{conn}
 }
 
@@ -26,17 +26,17 @@ func (b *BusRouteRepository) SelectAll(
 	cursor string,
 	limit int64,
 	locations []int64,
-) ([]*domain.BusRoute, string, error) {
+) ([]*bitsb.BusRoute, string, error) {
 	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at  FROM bus_routes 
 				WHERE created_at < $1 ORDER BY created_at DESC LIMIT $2;`
 
-	queryWithStops := `SELECT id, name, number, start_time, end_time, interval, location_ids, created_at, updated_at FROM bus_routes
+	queryWithStops := `SELECT  id, name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at FROM bus_routes
     						WHERE location_ids @> cast($3 as int[]) AND created_at < $1 ORDER BY created_at DESC LIMIT $2;`
 
 	decodedCursor, err := repo.DecodeCursor(cursor)
 	if err != nil {
-		err = errors.ErrBadCursor
-		return []*domain.BusRoute{}, "", err
+		err = apperrors.ErrBadCursor
+		return []*bitsb.BusRoute{}, "", err
 	}
 
 	var rows *sql.Rows
@@ -47,7 +47,7 @@ func (b *BusRouteRepository) SelectAll(
 	}
 
 	if err != nil {
-		return []*domain.BusRoute{}, "", err
+		return []*bitsb.BusRoute{}, "", err
 	}
 	defer func(rows *sql.Rows) {
 		err := rows.Close()
@@ -56,9 +56,9 @@ func (b *BusRouteRepository) SelectAll(
 		}
 	}(rows)
 
-	busRoutes := make([]*domain.BusRoute, 0, limit)
+	busRoutes := make([]*bitsb.BusRoute, 0, limit)
 	for rows.Next() {
-		busRoute := domain.BusRoute{}
+		busRoute := bitsb.BusRoute{}
 		err = rows.Scan(
 			&busRoute.ID,
 			&busRoute.Name,
@@ -73,7 +73,7 @@ func (b *BusRouteRepository) SelectAll(
 			&busRoute.UpdatedAt,
 		)
 		if err != nil {
-			return []*domain.BusRoute{}, "", err
+			return []*bitsb.BusRoute{}, "", err
 		}
 		busRoutes = append(busRoutes, &busRoute)
 	}
@@ -85,9 +85,9 @@ func (b *BusRouteRepository) SelectAll(
 	return busRoutes, nextCursor, nil
 }
 
-func (b *BusRouteRepository) SelectByID(ctx context.Context, id int64) (*domain.BusRoute, error) {
+func (b *BusRouteRepository) SelectByID(ctx context.Context, id int64) (*bitsb.BusRoute, error) {
 	query := `SELECT id, name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at FROM bus_routes WHERE id=$1;`
-	busRoute := &domain.BusRoute{}
+	busRoute := &bitsb.BusRoute{}
 	err := b.Conn.QueryRowContext(ctx, query, id).Scan(
 		&busRoute.ID,
 		&busRoute.Name,
@@ -104,7 +104,7 @@ func (b *BusRouteRepository) SelectByID(ctx context.Context, id int64) (*domain.
 	return busRoute, err
 }
 
-func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *domain.BusRoute) error {
+func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *bitsb.BusRoute) error {
 	query := `INSERT INTO bus_routes (name, number, start_time, end_time, interval, location_ids, min_price, max_price, created_at, updated_at)
     	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`
 
@@ -128,7 +128,7 @@ func (b *BusRouteRepository) Insert(ctx context.Context, busRoute *domain.BusRou
 	).Scan(&busRoute.ID)
 }
 
-func (b *BusRouteRepository) Update(ctx context.Context, busRoute *domain.BusRoute) error {
+func (b *BusRouteRepository) Update(ctx context.Context, busRoute *bitsb.BusRoute) error {
 	query := `UPDATE bus_routes 
 				SET name=$2, number=$3, start_time=$4, end_time=$5, interval=$6, location_ids=$7, min_price=$8, max_price=$9, updated_at=$10
 				WHERE id=$1`
@@ -153,7 +153,7 @@ func (b *BusRouteRepository) Update(ctx context.Context, busRoute *domain.BusRou
 		return err
 	}
 	if rowsAffected, _ := res.RowsAffected(); rowsAffected == 0 {
-		err = errors.ErrNotFound
+		err = apperrors.ErrNotFound
 	}
 	return err
 }
@@ -166,7 +166,7 @@ func (b *BusRouteRepository) Delete(ctx context.Context, id int64) error {
 		return err
 	}
 	if rowsAffected, _ := res.RowsAffected(); rowsAffected == 0 {
-		err = errors.ErrNotFound
+		err = apperrors.ErrNotFound
 	}
 	return err
 }

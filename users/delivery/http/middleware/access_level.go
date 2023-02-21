@@ -5,15 +5,15 @@ import (
 
 	"github.com/go-chi/render"
 
-	"github.com/sainak/bitsb/domain"
+	"github.com/sainak/bitsb/users"
 )
 
 // AccessAbove checks if the user has access level above the given level
-func AccessAbove(level domain.AccessLevel) func(next http.Handler) http.Handler {
+func AccessAbove(level users.AccessLevel) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// get user form context
-			user := r.Context().Value(UserCtxKey).(*domain.User)
+			user := r.Context().Value(UserCtxKey).(*users.User)
 			if user == nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				render.JSON(w, r, render.M{"message": "user not found in context"})
